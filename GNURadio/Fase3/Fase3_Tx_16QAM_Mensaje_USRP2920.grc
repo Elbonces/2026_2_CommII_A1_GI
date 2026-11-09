@@ -1,0 +1,626 @@
+options:
+  parameters:
+    author: Grupo A1-GI
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: Transmisor 16-QAM que envia en tramas el texto escrito en la ventana
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: Fase3_Tx_16QAM_Mensaje_USRP2920
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Fase 3 A1-GI - Transmisor 16-QAM de mensajes (USRP-2920)
+    window_size: (1700,1050)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 260
+    rotation: 0
+    state: enabled
+blocks:
+- name: div
+  id: variable
+  parameters:
+    value: '40'
+    comment: 'Divisor del reloj maestro (100 MHz) del USRP-2920: 8 -> 12,5 MS/s; 40 -> 2,5 MS/s (modo seguro)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 8
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    value: 100e6/div
+    comment: El USRP solo admite 100 MHz / N
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 8
+    rotation: 0
+    state: enabled
+- name: Sps
+  id: variable
+  parameters:
+    value: '4'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rs
+  id: variable
+  parameters:
+    value: samp_rate/Sps
+    comment: Rs = 625 kbaud con div = 40
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 8
+    rotation: 0
+    state: enabled
+- name: tabla_de_verdad_constelacion
+  id: variable
+  parameters:
+    value: lab.TABLA
+    comment: 16QAM Gray normalizada (misma de la Fase 2)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 640
+    - 8
+    rotation: 0
+    state: enabled
+- name: M
+  id: variable
+  parameters:
+    value: len(tabla_de_verdad_constelacion)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 8
+    rotation: 0
+    state: enabled
+- name: bps
+  id: variable
+  parameters:
+    value: int(math.log(M,2))
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1010
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rb
+  id: variable
+  parameters:
+    value: Rs*bps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1120
+    - 8
+    rotation: 0
+    state: enabled
+- name: span
+  id: variable
+  parameters:
+    value: '11'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 8
+    rotation: 0
+    state: enabled
+- name: beta
+  id: variable
+  parameters:
+    value: '0.35'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1320
+    - 8
+    rotation: 0
+    state: enabled
+- name: rrc_tx_taps
+  id: variable_rrc_filter_taps
+  parameters:
+    gain: Sps
+    samp_rate: samp_rate
+    sym_rate: Rs
+    alpha: beta
+    ntaps: span*Sps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1410
+    - 8
+    rotation: 0
+    state: enabled
+- name: fc
+  id: variable
+  parameters:
+    value: 920e6
+    comment: 'Banda de uso libre 915-928 MHz (Res. ANE 105/2020): canal 919,58-920,42 MHz'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 100
+    rotation: 0
+    state: enabled
+- name: lo_off
+  id: variable
+  parameters:
+    value: -8e6
+    comment: 'LO en 912 MHz: la fuga del oscilador queda fuera del canal (ojo: 912 MHz esta fuera de 915-928 MHz; +6e6 la dejaria dentro)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 100
+    rotation: 0
+    state: enabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    value: '"addr=192.168.10.2"'
+    comment: IP por defecto del NI USRP-2920
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 400
+    - 100
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    imports: |-
+      import math
+      from gnuradio import digital
+      from gnuradio.filter import firdes
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1650
+    - 8
+    rotation: 0
+    state: enabled
+- name: lab
+  id: epy_module
+  parameters:
+    source_code: |
+      """Utilidades del enlace 16-QAM del grupo A1-GI (Fase 3, laboratorio)."""
+      import math
+
+      # Constelacion 16-QAM Gray normalizada (Es = 1): b3b2 -> I, b1b0 -> Q
+      TABLA = [p / math.sqrt(10) for p in (-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                                             3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j)]
+
+
+      def prbs15():
+          """Secuencia PRBS15 (x^15 + x^14 + 1), periodo 32767 bits: b[n] = b[n-14] xor b[n-15]."""
+          s = [1] * 15
+          out = []
+          for _ in range(2 ** 15 - 1):
+              b = s[13] ^ s[14]
+              out.append(s[14])
+              s = [b] + s[:-1]
+          return out
+
+
+      def mapa_rotacion(k):
+          """Indice del punto que resulta de rotar cada punto k*90 grados."""
+          r = []
+          for p in TABLA:
+              q = p * (1j ** k)
+              r.append(min(range(16), key=lambda i: abs(q - TABLA[i])))
+          return r
+
+
+      # ---------------- Tramas de texto (transmisor con mensaje) ----------------
+      import zlib as _zlib
+
+      BITS_TRAMA = 8192                 # 2048 simbolos 16-QAM por trama
+      MAX_BYTES = (BITS_TRAMA - 64 - 32 - 32) // 8   # 1008 bytes de texto
+      import numpy as _np
+      SYNC = [int(b) for b in _np.random.RandomState(27145).randint(0, 2, 64)]   # palabra de sincronismo
+      _BLANQUEO = None
+
+
+      def _bits(valor, n):
+          return [(valor >> (n - 1 - i)) & 1 for i in range(n)]
+
+
+      def trama_bits(mensaje):
+          """SYNC(64) | blanqueado( LONG(16) | ~LONG(16) | TEXTO | CRC32 | relleno ) = 8192 bits."""
+          global _BLANQUEO
+          if _BLANQUEO is None:
+              _BLANQUEO = prbs15()[:BITS_TRAMA - 64]
+          datos = str(mensaje).encode('utf-8')[:MAX_BYTES]
+          largo = len(datos)
+          cuerpo = _bits(largo, 16) + _bits(largo ^ 0xFFFF, 16)
+          for byte in datos:
+              cuerpo += _bits(byte, 8)
+          cuerpo += _bits(_zlib.crc32(datos) & 0xFFFFFFFF, 32)
+          cuerpo += [0] * (BITS_TRAMA - 64 - len(cuerpo))
+          return SYNC + [c ^ w for c, w in zip(cuerpo, _BLANQUEO)]
+
+
+      def trama_bytes(mensaje):
+          """La misma trama empaquetada en 1024 bytes (MSB primero). Cada byte = 2 simbolos 16-QAM,
+          asi un cambio de mensaje en vivo nunca parte un simbolo por la mitad."""
+          b = trama_bits(mensaje)
+          return [sum(b[i + j] << (7 - j) for j in range(8)) for i in range(0, len(b), 8)]
+    comment: Tabla, PRBS15 y utilidades
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 300
+    - 260
+    rotation: 0
+    state: enabled
+- name: tx_escala
+  id: variable
+  parameters:
+    value: '0.45'
+    comment: 'Back-off: PAPR de 16QAM+RRC = 6,3 dB'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1250
+    - 190
+    rotation: 0
+    state: enabled
+- name: tx_ganancia
+  id: variable_qtgui_range
+  parameters:
+    label: Ganancia Tx USRP [dB]
+    start: '0'
+    stop: '31'
+    step: '1'
+    value: '25'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,0,1,2
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 190
+    rotation: 0
+    state: enabled
+- name: mensaje
+  id: variable_qtgui_entry
+  parameters:
+    label: Mensaje a transmitir (escriba y presione Enter)
+    type: string
+    value: 'Hola desde el grupo A1-GI: enlace 16-QAM USRP -> HackRF'
+    entry_signal: editingFinished
+    gui_hint: 5,0,1,2
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 190
+    rotation: 0
+    state: enabled
+- name: fuente_prbs
+  id: blocks_vector_source_x
+  parameters:
+    type: byte
+    vector: lab.trama_bytes(mensaje)
+    repeat: 'True'
+    tags: '[]'
+    vlen: '1'
+    comment: Trama de 1024 bytes con el texto escrito en la ventana (SYNC + longitud + texto + CRC32, blanqueada con PRBS15)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 420
+    rotation: 0
+    state: enabled
+- name: bits_to_symbols
+  id: blocks_repack_bits_bb
+  parameters:
+    k: '8'
+    l: bps
+    endianness: gr.GR_MSB_FIRST
+    align_output: 'False'
+    len_tag_key: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 300
+    - 420
+    rotation: 0
+    state: enabled
+- name: digital_chunks_to_symbols_xx_0
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    in_type: byte
+    out_type: complex
+    symbol_table: tabla_de_verdad_constelacion
+    dimension: '1'
+    num_ports: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 540
+    - 430
+    rotation: 0
+    state: enabled
+- name: rrc_tx
+  id: interp_fir_filter_xxx
+  parameters:
+    type: ccf
+    interp: Sps
+    taps: rrc_tx_taps
+    samp_delay: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 800
+    - 420
+    rotation: 0
+    state: enabled
+- name: escala_tx
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: complex
+    const: tx_escala
+    vlen: '1'
+    comment: 'Pico de la senal RRC ~2: x0,45 evita saturar el DAC (|x|<1)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1050
+    - 430
+    rotation: 0
+    state: enabled
+- name: usrp_tx
+  id: uhd_usrp_sink
+  parameters:
+    type: fc32
+    otw: sc16
+    dev_addr: usrp_addr
+    dev_args: '""'
+    samp_rate: samp_rate
+    center_freq0: uhd.tune_request(fc, lo_off)
+    gain0: tx_ganancia
+    gain_type0: default
+    ant0: '"TX/RX"'
+    nchan: '1'
+    num_mboards: '1'
+    sync: none
+    len_tag_name: '""'
+    bw0: '0'
+    comment: 'Antena en TX/RX (sin Throttle: el USRP fija el ritmo)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1280
+    - 400
+    rotation: 0
+    state: enabled
+- name: psd_tx
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '"PSD de la senal enviada al USRP"'
+    fftsize: '2048'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: fc
+    bw: samp_rate
+    average: '0.2'
+    ymin: '-120'
+    ymax: '0'
+    nconnections: '1'
+    autoscale: 'False'
+    grid: 'True'
+    legend: 'True'
+    units: dB
+    update_time: '0.1'
+    showports: 'False'
+    freqhalf: 'True'
+    ctrlpanel: 'False'
+    norm_window: 'False'
+    gui_hint: 1,0,2,2
+    axislabels: 'True'
+    label1: Senal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1280
+    - 700
+    rotation: 0
+    state: enabled
+- name: const_tx
+  id: qtgui_const_sink_x
+  parameters:
+    type: complex
+    name: '"Constelacion transmitida (antes del RRC)"'
+    size: '1024'
+    xmin: '-1.5'
+    xmax: '1.5'
+    ymin: '-1.5'
+    ymax: '1.5'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: '"Tx"'
+    grid: 'True'
+    legend: 'False'
+    update_time: '0.1'
+    marker1: '0'
+    style1: '0'
+    gui_hint: 3,0,2,1
+    axislabels: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 800
+    - 640
+    rotation: 0
+    state: enabled
+- name: envolvente_tx
+  id: qtgui_time_sink_x
+  parameters:
+    type: complex
+    name: '"Envolvente enviada al DAC (debe quedar entre -1 y 1)"'
+    size: '1024'
+    srate: samp_rate
+    ymin: '-1.2'
+    ymax: '1.2'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: I
+    label2: Q
+    grid: 'True'
+    legend: 'True'
+    update_time: '0.1'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    entags: 'False'
+    ctrlpanel: 'False'
+    stemplot: 'False'
+    gui_hint: 3,1,2,1
+    axislabels: 'True'
+    ylabel: Amplitud
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1280
+    - 900
+    rotation: 0
+    state: enabled
+connections:
+- - fuente_prbs
+  - '0'
+  - bits_to_symbols
+  - '0'
+- - bits_to_symbols
+  - '0'
+  - digital_chunks_to_symbols_xx_0
+  - '0'
+- - digital_chunks_to_symbols_xx_0
+  - '0'
+  - rrc_tx
+  - '0'
+- - rrc_tx
+  - '0'
+  - escala_tx
+  - '0'
+- - escala_tx
+  - '0'
+  - usrp_tx
+  - '0'
+- - escala_tx
+  - '0'
+  - psd_tx
+  - '0'
+- - digital_chunks_to_symbols_xx_0
+  - '0'
+  - const_tx
+  - '0'
+- - escala_tx
+  - '0'
+  - envolvente_tx
+  - '0'
+metadata:
+  file_format: 1
+  grc_version: 3.10.9.2

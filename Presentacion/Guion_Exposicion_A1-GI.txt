@@ -1,0 +1,121 @@
+GUION DE EXPOSICION - Grupo A1-GI (3 personas)
+P1 = Santiago Benitez · P2 = Juan Sebastian Bonces · P3 = Oscar German Hernandez (asignar como prefieran)
+
+
+=== Diapositiva 1 ===
+PERSONA 1 · ~0:20
+Buenos días. Somos el grupo A1-GI y vamos a presentar el recorrido completo de nuestro proyecto de Comunicaciones II: un enlace inalámbrico 16-QAM que diseñamos y simulamos, y que ahora funciona entre dos radios reales, un USRP-2920 que transmite y un HackRF One que recibe, a 920 MHz. Al final mostramos cómo medimos las curvas de SER y de BER contra Eb/N0 con el instrumento de la Guía 4.
+Nos repartimos así: yo cuento la aplicación y la simulación; mi compañero de la Persona 2 explica el paso al hardware y los dos equipos; y la Persona 3 presenta las pruebas, la comparación con la simulación y las curvas de SER y BER.
+
+=== Diapositiva 2 ===
+PERSONA 1 · ~0:30
+La presentación sigue el orden en que trabajamos. Primero la aplicación y la simulación, que fijaron todos los parámetros. Después el hardware: qué conservamos del diseño, qué tuvimos que cambiar y cómo quedaron el transmisor y el receptor. Y por último las pruebas: lo que demuestra cada evidencia, cómo se compara con la simulación y la medición de SER y BER.
+Cada bloque lo presenta una persona distinta; el número de la esquina inferior indica quién habla.
+
+=== Diapositiva 3 ===
+PERSONA 1 · ~0:45
+En la Fase 1 elegimos una aplicación concreta: una cámara montada en el brazo de un robot, en una celda de manufactura, que envía imágenes al servidor de visión para inspección óptica. Hoy esa cámara va por cable y el cable falla por fatiga mecánica; por eso queremos un enlace inalámbrico de subida.
+Los requisitos fueron entre 10 y 20 megabits por segundo en un canal ISM de 3 a 5 MHz, con roll-off 0,35, a una distancia de 1 a 5 metros y potencias de 10 a 15 dBm. Y la Fase 1 identificó cuatro enemigos del canal: la interferencia impulsiva de variadores y soldadoras, el multitrayecto, la sombra de 10 a 20 dB cuando el brazo o una persona tapan la línea de vista, y la vibración de la antena. Elegimos 16-QAM porque transporta 4 bits por símbolo dentro de un ancho de banda limitado.
+
+=== Diapositiva 4 ===
+PERSONA 1 · ~0:50
+Aquí está la primera decisión de ingeniería. Los requisitos de la Fase 1 tenían una inconsistencia: con 16-QAM la tasa de símbolos es la tasa de bits dividida entre cuatro, y el ancho de banda es Rs por uno más beta. Para 20 megabits por segundo salen 5 megabaudios y 6,75 MHz, que no caben en un canal de 5 MHz. El máximo compatible es unos 14,8 megabits.
+Por eso elegimos 12 megabits por segundo: cumple el rango de la Fase 1, deja un 20 por ciento sobre el mínimo de 10 para encabezados o una codificación futura, y ocupa 4,05 MHz, dejando casi 1 MHz de guarda frente al canal de bajada. Con 8 muestras por símbolo, la tasa de muestreo es 24 mega-muestras por segundo.
+
+=== Diapositiva 5 ===
+PERSONA 1 · ~0:45
+Este es el flujograma de la simulación, tal como lo exportamos de GNU Radio. De izquierda a derecha, el transmisor: bits aleatorios, agrupados de a cuatro, mapeados a la constelación 16-QAM con código Gray y conformados con un filtro de coseno alzado raíz.
+En el centro el canal, que parametrizamos con Es sobre N0 y al que añadimos sombra como atenuación y una interferencia impulsiva. Y el receptor: filtro acoplado, ajuste de la fase de muestreo, AGC y decisor de mínima distancia, con medición de BER y de EVM. Dos detalles importantes: el mapeo Gray hace que un error de símbolo vecino cueste un solo bit, y el AGC es imprescindible porque en QAM la información también viaja en la amplitud.
+
+=== Diapositiva 6 ===
+PERSONA 1 · ~0:45
+Algo que corregimos de la entrega anterior: el canal de la Guía 1 usaba una amplitud de ruido arbitraria, sin referencia a la potencia de la señal. Eso no dice nada sobre el BER; lo que importa es Eb sobre N0. Al calcularlo, los tres niveles de ruido de la guía correspondían a 29, 17 y 9,9 dB, y se habían interpretado mal.
+Ahora el canal se define con Es sobre N0, la sombra se modela como una atenuación de la señal y no como más ruido, y la interferencia impulsiva se modela como ráfagas. Esto último importa: con la misma potencia media, la interferencia impulsiva produjo un BER de 1,1 por 10 a la menos 3, mientras que un ruido gaussiano equivalente no produjo errores. La potencia media de ruido no basta para predecir el desempeño en planta.
+
+=== Diapositiva 7 ===
+PERSONA 1 · ~0:55
+Para validar la cadena completa barrimos Eb sobre N0 de 0 a 12 dB y medimos el BER. Los puntos medidos coinciden con la teoría del 16-QAM Gray: a 10 dB medimos 1,71 por 10 a la menos 3 frente a 1,75 teórico, y a 12 dB 1,41 por 10 a la menos 4 frente a 1,39. Eso confirma tres cosas a la vez: la relación entre la amplitud de ruido y Es sobre N0, que no hay interferencia entre símbolos, y que el decisor es óptimo.
+Además, dos pruebas fallidas definieron el diseño: un desfase de una sola muestra en el instante de muestreo daba un EVM del 17 por ciento sin ruido, y sin AGC cualquier sombra daba un BER de 0,25. El umbral de 10 a la menos 5 queda en Eb sobre N0 de unos 13,4 dB.
+Con esto el diseño estaba listo para llevarlo a hardware. Le paso la palabra a la Persona 2.
+
+=== Diapositiva 8 ===
+PERSONA 2 · ~0:55
+Gracias. Ahora pasamos del simulador a los radios. El enlace físico tiene el USRP-2920 transmitiendo en un computador con Windows y el HackRF One recibiendo en otro con Ubuntu, a unos 920 MHz y alrededor de un metro.
+Esta tabla resume qué se conservó y qué cambió. Conservamos el corazón del diseño: la constelación Gray, el filtro RRC con roll-off 0,35 y los 4 bits por símbolo. Cambió todo lo que en simulación era ideal: el canal ahora es aire; el reloj lo marcan los radios, así que el muestreo fijo se reemplazó por un Symbol Sync; la portadora ya no es ideal, hay un desfase entre osciladores y se necesita un lazo de portadora; y el BER ya no se mide con una referencia, sino con una trama con CRC y bits conocidos.
+Y un cambio que no queríamos: la tasa de símbolos bajó de 3 megabaudios a 625 kilobaudios, porque el computador del laboratorio no sostiene 12,5 mega-muestras por segundo.
+
+=== Diapositiva 9 ===
+PERSONA 2 · ~0:55
+Elegimos 920 MHz porque está dentro de la banda de uso libre en Colombia, de 915 a 928 MHz, según la resolución 105 de 2020 de la ANE. Por debajo, de 902 a 915, la banda está asignada a telefonía móvil, así que no debemos transmitir ahí.
+Dos detalles de RF. Primero, el HackRF tiene un pico de continua en el centro de su banda; para que no caiga dentro de nuestro canal lo sintonizamos 1,25 MHz por debajo, en 918,75, y lo desplazamos por software. Segundo, un hallazgo que reportamos como limitación: el USRP usa un desplazamiento de oscilador de menos 8 MHz, lo que deja su fuga de oscilador en 912 MHz, fuera de la banda libre; recomendamos cambiarlo a más 6 MHz.
+En tasas: 2,5 mega-muestras en banda base, 625 kilobaudios, 2,5 megabits por segundo y un ancho de banda de unos 844 kHz. El HackRF muestrea a 5 y se diezma por 2.
+
+=== Diapositiva 10 ===
+PERSONA 2 · ~0:55
+Este es el flujograma del transmisor. La novedad frente a la simulación es la fuente: en lugar de bits aleatorios, el transmisor arma una trama de 8192 bits, o sea 2048 símbolos, con una palabra de sincronismo de 64 bits, la longitud del texto, el texto en UTF-8, un CRC-32 y relleno. Todo lo que sigue al sincronismo se blanquea con una secuencia PRBS15, para que un texto repetitivo no deje al detector de reloj sin transiciones.
+Después el resto es el mismo diseño: se agrupan los bits, se mapean con Gray y se filtra con el RRC. La salida va al bloque UHD Sink a 920 MHz con 2,5 mega-muestras por segundo y una ganancia ajustable, y el texto se puede cambiar en vivo desde una caja en la ventana.
+
+=== Diapositiva 11 ===
+PERSONA 2 · ~0:55
+El receptor tiene más bloques porque aquí está todo lo que la simulación suponía ideal. La fuente es el bloque Osmocom con el HackRF a 5 mega-muestras, sintonizado en 918,75 MHz, con ganancia de IF de 32 y de banda base de 30. Un filtro de traslación mueve la señal a banda base, la filtra y la diezma por 2, quedando a 2,5 mega-muestras.
+Luego viene la cadena digital: un AGC, el Symbol Sync con detector de Gardner que recupera el reloj de símbolo, otro AGC, y el Constellation Receiver, que es el lazo de portadora. Al final, el decodificador busca la palabra de sincronismo en las cuatro rotaciones posibles, porque el lazo puede engancharse girado 90, 180 o 270 grados, y solo muestra el texto si el CRC-32 es válido. Aquí también medimos EVM y desfase de portadora.
+
+=== Diapositiva 12 ===
+PERSONA 2 · ~0:45
+Antes de encender el receptor verificamos la emisión con un analizador de espectros R&S FPC1000 y una antena a un metro. A la izquierda se ve la señal con un span de 5 MHz: una meseta de 919,6 a 920,4 MHz, a unos menos 73 dBm, unos 35 dB por encima del piso de ruido. Su ancho coincide con el que fijan la frecuencia, la tasa de símbolos y el roll-off.
+A la derecha, un barrido de 850 a 960 MHz donde solo aparece nuestra señal: sin espurias, y sin la fuga del oscilador. Esto demuestra que la interfaz del transmisor funciona: lo que sale por la antena es lo que diseñamos. Le paso la palabra a la Persona 3 para las pruebas de recepción.
+
+=== Diapositiva 13 ===
+PERSONA 3 · ~0:55
+Gracias. Esta es la ventana del receptor con el enlace enganchado, con el transmisor a 25 dB y a un metro. Arriba a la izquierda el espectro crudo del HackRF, con el pico de continua del radio fuera de nuestro canal; arriba a la derecha el canal ya trasladado a banda base.
+Lo más interesante son las dos constelaciones. Después del Symbol Sync pero antes del lazo de portadora, la constelación forma anillos, porque gira: el desfase entre los osciladores es de 3469 Hz, unas 3,8 partes por millón a 920 MHz, y eso hace girar la constelación 0,035 radianes por símbolo. Después del lazo quedan 16 nubes definidas, con un EVM de 9,99 por ciento. El lazo se enganchó girado 180 grados, y por eso el decodificador busca el sincronismo en las cuatro rotaciones.
+En números: 529 tramas con CRC correcto contra 18 con error, y un BER de 2,75 por 10 a la menos 4 medido con los bits conocidos.
+
+=== Diapositiva 14 ===
+PERSONA 3 · ~0:45
+La prueba final de que el sistema transmite y recibe información: escribimos un texto en el computador del USRP y apareció idéntico en el computador del HackRF. Arriba, la caja de mensaje del transmisor; abajo, el campo de mensaje recibido.
+Y es una prueba exigente, porque el receptor solo muestra el texto si el CRC-32 de la trama es válido, y ese código detecta cualquier error de bits. Es decir, no hay texto 'casi correcto': o llega completo o no se muestra. También observamos el efecto del canal real: con objetos entre las antenas el mensaje llegaba peor, que es la sombra que modelamos en la Fase 2, ahora real.
+
+=== Diapositiva 15 ===
+PERSONA 3 · ~0:55
+Para saber qué es del diseño y qué es del hardware, corrimos el enlace simulado con las condiciones que medimos: Es sobre N0 de 20 dB, que da el mismo EVM, un desfase de 3,5 kHz y 5 partes por millón de error de reloj.
+El EVM coincide: 10,4 por ciento simulado contra 9,99 medido, y el desfase también. Pero el BER en hardware es unas 27 veces mayor: 2,75 por 10 a la menos 4 contra 1 por 10 a la menos 5. Eso aísla los defectos propios de los radios. Nuestras sospechas son el ruido de fase de los osciladores, una compresión del HackRF, porque se ve un hombro en el espectro crudo, y los underflows del transmisor. Pero ojo: son sospechas, no las hemos separado experimentalmente.
+Por eso la medición de BER contra Eb sobre N0 es el siguiente paso natural.
+
+=== Diapositiva 16 ===
+PERSONA 3 · ~1:00
+La Guía 4 pide una curva de BER contra Eb sobre N0 sin reemplazar el transmisor ni el receptor. El instrumento se inserta en el receptor: justo después de la traslación a banda base, a 2,5 mega-muestras, y antes del receptor digital, un bloque añade ruido gaussiano controlado. Se calcula a partir de la potencia medida de la señal, de modo que Eb sobre N0 queda fijado, y barre de 0 a 14 dB en pasos de 1 dB.
+Al final de la cadena comparamos lo recibido con lo transmitido: símbolos para la curva SER, que es la que pidió el profesor, y bits para la curva BER. Como el transmisor está en otro computador, el receptor regenera la misma trama conocida y un bloque nuevo, que escribimos nosotros, la alinea con los símbolos recibidos. Otro bloque escribe un archivo CSV con las métricas de cada ventana.
+Un dato práctico: el instrumento en vivo desbordaba el computador del laboratorio. Por eso grabamos unos 155 segundos de muestras reales del HackRF y las repetimos desde archivo, aplicando el barrido sobre esa grabación. Es una caracterización híbrida: conserva las imperfecciones reales del radio y añade ruido digital controlado.
+
+=== Diapositiva 17 ===
+PERSONA 3 · ~0:55
+Cuatro decisiones. Una: la guía propone calibrar a mano un retardo de bits entre el transmisor y el receptor. Pero nuestro transmisor está en otro computador, el desfase cambia en cada ejecución y además hay una ambigüedad de fase de 90 grados. Por eso escribimos un bloque que busca la alineación automáticamente por correlación y la va siguiendo; el desfase queda visible en pantalla.
+Dos: el medidor original compara bit a bit en Python y, medido, apenas alcanza 2,5 megabits por segundo, justo el límite. Lo vectorizamos: da exactamente los mismos conteos y es unas 12 veces más rápido. Tres: la guía sugiere 1000 bits de guarda, pero en simulación con 1000 la curva se queda en un piso de 9 por 10 a la menos 3, porque el lazo de portadora tarda en reenganchar tras cada cambio de ruido; con 20 000 la curva sigue la teoría.
+Y cuatro: como el instrumento en vivo desbordaba el computador, grabamos las muestras reales y las repetimos desde archivo. Además, al revisar las ventanas vimos que una fracción pierde el sincronismo y contamina el promedio, así que reportamos la mediana por nivel y cuántas ventanas se perdieron.
+
+=== Diapositiva 18 ===
+PERSONA 3 · ~0:55
+Antes de usar el instrumento con los radios lo validamos en el enlace simulado, que tiene el mismo receptor. Primero, en condición limpia, sin ruido añadido: cero errores en unos 37 millones de bits, es decir, una cota de BER menor a 10 a la menos 7.
+Con el barrido de 150 segundos, la curva baja al subir Eb sobre N0 y llega a 5,7 por 10 a la menos 6 en 14 dB. En BER de 10 a la menos 3, la teoría da 10,52 dB y la simulación 11,23: una penalización de 0,7 dB, dentro del límite de 2 dB que fija el criterio del proyecto.
+Una advertencia honesta: entre 6 y 10 dB la BER es mucho peor que la teórica y cambia de una corrida a otra, porque el lazo de portadora se desengancha con poca señal. Es un comportamiento del receptor, no del instrumento, y lo vamos a discutir.
+
+=== Diapositiva 19 ===
+PERSONA 3 · ~1:10
+Esta es la curva SER medida con los radios reales: el USRP transmitiendo y el HackRF recibiendo, con el ruido controlado del instrumento, 87 a 88 ventanas por nivel de Eb sobre N0. La línea negra es la teoría del 16-QAM Gray, los puntos verdes son la mediana por nivel y la línea gris punteada es el promedio, que queda por encima porque incluye las ventanas donde el receptor perdió el sincronismo.
+Con la mediana, entre 5 y 12 dB la curva sigue la teoría. Para un SER de 10 a la menos 3 la teoría pide 11,61 dB y medimos 11,63: una penalización de 0,03 dB, muy dentro del criterio de 2 dB. Para un BER de 10 a la menos 3 la teoría da 10,52 y medimos 9,86; que quede algo por debajo no significa que superemos al canal ideal, es un efecto de usar la mediana de conteos en ventanas finitas.
+Hay tres cosas que decir con honestidad. Debajo de 5 dB el receptor no engancha y el SER medido no es válido. A 12 y 13 dB aparece un piso de unos 10 a la menos 4 en BER. Y el punto de 14 dB sale degradado, con SER de 8 por ciento, a pesar de que la SNR medida es 13,85 dB; eso apunta a un problema de alineación y no de ruido. La SNR medida coincide con el Eb sobre N0 aplicado dentro de 0,2 dB, lo que valida el barrido.
+
+=== Diapositiva 20 ===
+PERSONA 3 · ~0:50
+Queremos ser claros sobre lo que no logramos o no pudimos explicar. Primero, el requisito era 12 megabits por segundo y el hardware nos dio 2,5: el computador del laboratorio no sostiene la tasa del diseño y recuperarla es deuda pendiente. Segundo, el oscilador del USRP queda fuera de la banda libre y lo corregiríamos con un desplazamiento de más 6 MHz. Tercero, la brecha de 27 veces en BER entre hardware y simulación está atribuida a causas que todavía no separamos experimentalmente.
+Cuarto, los underflows esporádicos del transmisor meten ráfagas de error. Quinto, y lo más importante de esta medición: el sincronismo es intermitente. Cerca del 15 por ciento de las ventanas se pierden incluso a 13 y 14 dB, la curva tiene un piso a 12 y 13 dB y el punto de 14 dB sale degradado; no aislamos la causa, y las candidatas son los underflows y el reenganche del alineador. Sexto, la medición es híbrida: una sola grabación, ruido sintético, una guarda de 20 000 bits en lugar de los 1000 de la guía, y un bloque de métricas que escribimos nosotros porque el del profesor no llegó. Si exige 1000, cambiamos una variable.
+
+=== Diapositiva 21 ===
+PERSONA 3 · ~0:50
+Para cerrar. Uno: los parámetros se derivaron de la aplicación y no de los archivos base; el diseño en simulación sigue la teoría del 16-QAM. Dos: el diseño llegó a un enlace real; el USRP transmite, el HackRF recibe y un texto escrito en un computador aparece idéntico en el otro, verificado con CRC. Tres: lo que en simulación era ideal, la portadora y el reloj, hubo que resolverlo en hardware con un lazo de portadora, un Symbol Sync y la búsqueda del sincronismo en cuatro rotaciones.
+Cuatro: el instrumento de SER y BER contra Eb sobre N0 funciona; en simulación tiene una penalización de 0,7 dB a 10 a la menos 3. Y la curva experimental, que es el resultado de hoy: con la mediana por nivel, el enlace real sigue la teoría entre 5 y 12 dB, con una penalización de 0,03 dB en SER de 10 a la menos 3, y la SNR medida confirma el barrido. Lo que limita al receptor es el sincronismo, no la modulación: debajo de 5 dB no engancha, a 12 y 14 dB queda un piso y cerca del 15 por ciento de ventanas se pierden. Ese es el primer punto a mejorar. Gracias; quedamos atentos a sus preguntas.
+
+=== Diapositiva 22 ===
+TODOS · preguntas
+Quien haya presentado el tema responde: Persona 1 (aplicación, parámetros, simulación), Persona 2 (hardware, Tx, Rx, frecuencias), Persona 3 (pruebas, SER/BER, curvas, limitaciones).
