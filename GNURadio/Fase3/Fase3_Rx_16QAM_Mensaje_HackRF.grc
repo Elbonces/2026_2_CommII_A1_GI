@@ -1,0 +1,1511 @@
+options:
+  parameters:
+    author: Grupo A1-GI
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: Receptor 16-QAM que recupera el texto enviado por el transmisor USRP
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: Fase3_Rx_16QAM_Mensaje_HackRF
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Fase 3 A1-GI - Receptor 16-QAM de mensajes (HackRF One)
+    window_size: (1700,1050)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 260
+    rotation: 0
+    state: enabled
+blocks:
+- name: div
+  id: variable
+  parameters:
+    value: '40'
+    comment: Debe ser IGUAL al div del transmisor (bb_rate = 2,5 MS/s)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 8
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    value: 100e6/div
+    comment: El USRP solo admite 100 MHz / N
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 8
+    rotation: 0
+    state: enabled
+- name: Sps
+  id: variable
+  parameters:
+    value: '4'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rs
+  id: variable
+  parameters:
+    value: samp_rate/Sps
+    comment: Rs = 625 kbaud con div = 40
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 8
+    rotation: 0
+    state: enabled
+- name: tabla_de_verdad_constelacion
+  id: variable
+  parameters:
+    value: lab.TABLA
+    comment: 16QAM Gray normalizada (misma de la Fase 2)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 640
+    - 8
+    rotation: 0
+    state: enabled
+- name: M
+  id: variable
+  parameters:
+    value: len(tabla_de_verdad_constelacion)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 8
+    rotation: 0
+    state: enabled
+- name: bps
+  id: variable
+  parameters:
+    value: int(math.log(M,2))
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1010
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rb
+  id: variable
+  parameters:
+    value: Rs*bps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1120
+    - 8
+    rotation: 0
+    state: enabled
+- name: span
+  id: variable
+  parameters:
+    value: '11'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 8
+    rotation: 0
+    state: enabled
+- name: beta
+  id: variable
+  parameters:
+    value: '0.35'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1320
+    - 8
+    rotation: 0
+    state: enabled
+- name: rrc_tx_taps
+  id: variable_rrc_filter_taps
+  parameters:
+    gain: Sps
+    samp_rate: samp_rate
+    sym_rate: Rs
+    alpha: beta
+    ntaps: span*Sps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1410
+    - 8
+    rotation: 0
+    state: enabled
+- name: fc
+  id: variable
+  parameters:
+    value: 920e6
+    comment: 'Banda de uso libre 915-928 MHz (Res. ANE 105/2020): canal 919,58-920,42 MHz'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 100
+    rotation: 0
+    state: enabled
+- name: lo_off
+  id: variable
+  parameters:
+    value: -8e6
+    comment: 'LO en 912 MHz: la fuga del oscilador queda fuera del canal (ojo: 912 MHz esta fuera de 915-928 MHz; +6e6 la dejaria dentro)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 100
+    rotation: 0
+    state: disabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    value: '"addr=192.168.10.2"'
+    comment: IP por defecto del NI USRP-2920
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 400
+    - 100
+    rotation: 0
+    state: disabled
+- name: import_0
+  id: import
+  parameters:
+    imports: |-
+      import math
+      from gnuradio import digital
+      from gnuradio.filter import firdes
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1650
+    - 8
+    rotation: 0
+    state: enabled
+- name: lab
+  id: epy_module
+  parameters:
+    source_code: |
+      """Utilidades del enlace 16-QAM del grupo A1-GI (Fase 3, laboratorio)."""
+      import math
+
+      # Constelacion 16-QAM Gray normalizada (Es = 1): b3b2 -> I, b1b0 -> Q
+      TABLA = [p / math.sqrt(10) for p in (-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                                             3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j)]
+
+
+      def prbs15():
+          """Secuencia PRBS15 (x^15 + x^14 + 1), periodo 32767 bits: b[n] = b[n-14] xor b[n-15]."""
+          s = [1] * 15
+          out = []
+          for _ in range(2 ** 15 - 1):
+              b = s[13] ^ s[14]
+              out.append(s[14])
+              s = [b] + s[:-1]
+          return out
+
+
+      def mapa_rotacion(k):
+          """Indice del punto que resulta de rotar cada punto k*90 grados."""
+          r = []
+          for p in TABLA:
+              q = p * (1j ** k)
+              r.append(min(range(16), key=lambda i: abs(q - TABLA[i])))
+          return r
+
+
+      # ---------------- Tramas de texto (transmisor con mensaje) ----------------
+      import zlib as _zlib
+
+      BITS_TRAMA = 8192                 # 2048 simbolos 16-QAM por trama
+      MAX_BYTES = (BITS_TRAMA - 64 - 32 - 32) // 8   # 1008 bytes de texto
+      import numpy as _np
+      SYNC = [int(b) for b in _np.random.RandomState(27145).randint(0, 2, 64)]   # palabra de sincronismo
+      _BLANQUEO = None
+
+
+      def _bits(valor, n):
+          return [(valor >> (n - 1 - i)) & 1 for i in range(n)]
+
+
+      def trama_bits(mensaje):
+          """SYNC(64) | blanqueado( LONG(16) | ~LONG(16) | TEXTO | CRC32 | relleno ) = 8192 bits."""
+          global _BLANQUEO
+          if _BLANQUEO is None:
+              _BLANQUEO = prbs15()[:BITS_TRAMA - 64]
+          datos = str(mensaje).encode('utf-8')[:MAX_BYTES]
+          largo = len(datos)
+          cuerpo = _bits(largo, 16) + _bits(largo ^ 0xFFFF, 16)
+          for byte in datos:
+              cuerpo += _bits(byte, 8)
+          cuerpo += _bits(_zlib.crc32(datos) & 0xFFFFFFFF, 32)
+          cuerpo += [0] * (BITS_TRAMA - 64 - len(cuerpo))
+          return SYNC + [c ^ w for c, w in zip(cuerpo, _BLANQUEO)]
+
+
+      def trama_bytes(mensaje):
+          """La misma trama empaquetada en 1024 bytes (MSB primero). Cada byte = 2 simbolos 16-QAM,
+          asi un cambio de mensaje en vivo nunca parte un simbolo por la mitad."""
+          b = trama_bits(mensaje)
+          return [sum(b[i + j] << (7 - j) for j in range(8)) for i in range(0, len(b), 8)]
+    comment: Tabla, PRBS15 y utilidades
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1960
+    - 300
+    rotation: 0
+    state: enabled
+- name: hackrf_rate
+  id: variable
+  parameters:
+    value: 2*samp_rate
+    comment: radio_rate = 2 x bb_rate = 5 MS/s; se diezma x2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 280
+    rotation: 0
+    state: enabled
+- name: desplaz_hz
+  id: variable
+  parameters:
+    value: 1.25e6
+    comment: 'El HackRF se sintoniza 1,25 MHz abajo: su pico de DC queda fuera del canal'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 680
+    - 280
+    rotation: 0
+    state: enabled
+- name: taps_traslacion
+  id: variable
+  parameters:
+    value: firdes.low_pass(1.0, hackrf_rate, 0.6e6*samp_rate/2.5e6, 0.2e6*samp_rate/2.5e6)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 860
+    - 280
+    rotation: 0
+    state: enabled
+- name: amp_hackrf
+  id: variable_qtgui_check_box
+  parameters:
+    label: Amplificador HackRF (+14 dB)
+    type: bool
+    value: 'False'
+    'true': 'True'
+    'false': 'False'
+    gui_hint: 0,1,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 680
+    - 190
+    rotation: 0
+    state: enabled
+- name: lna_hackrf
+  id: variable_qtgui_range
+  parameters:
+    label: Ganancia LNA HackRF [dB]
+    start: '0'
+    stop: '40'
+    step: '8'
+    value: '32'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 1,0,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 190
+    rotation: 0
+    state: enabled
+- name: vga_hackrf
+  id: variable_qtgui_range
+  parameters:
+    label: Ganancia VGA HackRF [dB]
+    start: '0'
+    stop: '62'
+    step: '2'
+    value: '30'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 1,1,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1120
+    - 190
+    rotation: 0
+    state: enabled
+- name: ajuste_hz
+  id: variable_qtgui_range
+  parameters:
+    label: Correccion gruesa de frecuencia [Hz]
+    start: '-40000'
+    stop: '40000'
+    step: '500'
+    value: '0'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 1,2,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1340
+    - 190
+    rotation: 0
+    state: enabled
+- name: grabar
+  id: variable_qtgui_check_box
+  parameters:
+    label: Grabar IQ en archivo
+    type: bool
+    value: 'False'
+    'true': 'True'
+    'false': 'False'
+    gui_hint: 1,3,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1560
+    - 190
+    rotation: 0
+    state: enabled
+- name: archivo_iq
+  id: variable
+  parameters:
+    value: '"captura_hackrf_iq_%dkSps.cfile" % int(samp_rate/1e3)'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1560
+    - 280
+    rotation: 0
+    state: enabled
+- name: hackrf_rx
+  id: osmosdr_source
+  parameters:
+    type: fc32
+    args: '"hackrf=0"'
+    sample_rate: hackrf_rate
+    nchan: '1'
+    num_mboards: '1'
+    sync: none
+    freq0: fc - desplaz_hz
+    corr0: '0'
+    dc_offset_mode0: '0'
+    iq_balance_mode0: '0'
+    gain_mode0: 'False'
+    gain0: 14 if amp_hackrf else 0
+    if_gain0: lna_hackrf
+    bb_gain0: vga_hackrf
+    ant0: '""'
+    bw0: '0'
+    comment: Antena en ANT; sintonizado en fc - 1,25 MHz. RF Gain = amplificador (0/14), IF = LNA, BB = VGA
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 420
+    rotation: 0
+    state: enabled
+- name: rx_traslacion
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    type: ccc
+    decim: '2'
+    taps: taps_traslacion
+    center_freq: desplaz_hz + ajuste_hz
+    samp_rate: hackrf_rate
+    comment: Lleva la senal a 0 Hz, filtra y diezma x2 (radio_rate -> bb_rate)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 330
+    - 420
+    rotation: 0
+    state: enabled
+- name: copia_grabar
+  id: blocks_copy
+  parameters:
+    type: complex
+    enabled: grabar
+    vlen: '1'
+    showports: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 330
+    - 800
+    rotation: 0
+    state: enabled
+- name: archivo
+  id: blocks_file_sink
+  parameters:
+    type: complex
+    file: archivo_iq
+    unbuffered: 'False'
+    append: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 800
+    rotation: 0
+    state: enabled
+- name: fuente_archivo
+  id: blocks_file_source
+  parameters:
+    type: complex
+    file: archivo_iq
+    repeat: 'False'
+    vlen: '1'
+    offset: '0'
+    length: '0'
+    begin_tag: pmt.PMT_NIL
+    comment: 'Procesamiento fuera de linea: habilite este bloque y el Throttle, deshabilite el HackRF'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 1000
+    rotation: 0
+    state: disabled
+- name: throttle_archivo
+  id: blocks_throttle2
+  parameters:
+    type: complex
+    samples_per_second: samp_rate
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 330
+    - 1060
+    rotation: 0
+    state: disabled
+- name: psd_hackrf
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '"Espectro crudo del HackRF (pico de DC en el centro; la senal a la derecha)"'
+    fftsize: '2048'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: fc - desplaz_hz
+    bw: hackrf_rate
+    average: '0.2'
+    ymin: '-120'
+    ymax: '0'
+    nconnections: '1'
+    autoscale: 'False'
+    grid: 'True'
+    legend: 'True'
+    units: dB
+    update_time: '0.1'
+    showports: 'False'
+    freqhalf: 'True'
+    ctrlpanel: 'False'
+    norm_window: 'False'
+    gui_hint: 2,0,2,2
+    axislabels: 'True'
+    label1: Senal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 330
+    - 650
+    rotation: 0
+    state: enabled
+- name: psd_rx
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '"Espectro del canal tras la traslacion (centrado en fc)"'
+    fftsize: '2048'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: fc
+    bw: samp_rate
+    average: '0.2'
+    ymin: '-120'
+    ymax: '0'
+    nconnections: '1'
+    autoscale: 'False'
+    grid: 'True'
+    legend: 'True'
+    units: dB
+    update_time: '0.1'
+    showports: 'False'
+    freqhalf: 'True'
+    ctrlpanel: 'False'
+    norm_window: 'False'
+    gui_hint: 2,2,2,2
+    axislabels: 'True'
+    label1: Senal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 620
+    - 650
+    rotation: 0
+    state: enabled
+- name: nfilts
+  id: variable
+  parameters:
+    value: '32'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 100
+    rotation: 0
+    state: enabled
+- name: rrc_mf_taps
+  id: variable
+  parameters:
+    value: firdes.root_raised_cosine(nfilts, nfilts*samp_rate, Rs, beta, span*Sps*nfilts)
+    comment: Filtro acoplado RRC dentro del Symbol Sync
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 620
+    - 100
+    rotation: 0
+    state: enabled
+- name: constelacion_16qam
+  id: variable
+  parameters:
+    value: digital.constellation_calcdist(tabla_de_verdad_constelacion, [], 4, 1, digital.constellation.NO_NORMALIZATION)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 930
+    - 100
+    rotation: 0
+    state: enabled
+- name: ref_agc
+  id: variable
+  parameters:
+    value: sum(abs(p) for p in tabla_de_verdad_constelacion)/M
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1250
+    - 100
+    rotation: 0
+    state: enabled
+- name: lazo_simbolo
+  id: variable_qtgui_range
+  parameters:
+    label: Ancho de lazo sincronismo de simbolo
+    start: '0.005'
+    stop: '0.1'
+    step: '0.005'
+    value: '0.02'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,2,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 190
+    rotation: 0
+    state: enabled
+- name: lazo_portadora
+  id: variable_qtgui_range
+  parameters:
+    label: Ancho de lazo de portadora [rad/simb]
+    start: '0.002'
+    stop: '0.06'
+    step: '0.001'
+    value: '0.016'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,3,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 190
+    rotation: 0
+    state: enabled
+- name: rx_agc_muestras
+  id: analog_agc2_xx
+  parameters:
+    type: complex
+    attack_rate: 1e-1
+    decay_rate: 1e-2
+    reference: '1.0'
+    gain: '1.0'
+    max_gain: '65536'
+    comment: Normaliza el nivel recibido
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 620
+    - 430
+    rotation: 0
+    state: enabled
+- name: rx_sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    type: cc
+    ted_type: digital.TED_GARDNER
+    constellation: constelacion_16qam
+    sps: Sps
+    ted_gain: '1.0'
+    loop_bw: lazo_simbolo
+    damping: '1.0'
+    max_dev: '1.5'
+    osps: '1'
+    resamp_type: digital.IR_PFB_MF
+    nfilters: nfilts
+    pfb_mf_taps: rrc_mf_taps
+    comment: Filtro acoplado RRC + recuperacion de reloj (Gardner)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 850
+    - 420
+    rotation: 0
+    state: enabled
+- name: rx_agc_simbolos
+  id: analog_agc_xx
+  parameters:
+    type: complex
+    rate: 1e-3
+    reference: ref_agc
+    gain: '1.0'
+    max_gain: '1000'
+    comment: AGC de la Fase 2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1150
+    - 430
+    rotation: 0
+    state: enabled
+- name: rx_portadora
+  id: digital_constellation_receiver_cb
+  parameters:
+    constellation: constelacion_16qam
+    loop_bw: lazo_portadora
+    fmin: '-0.25'
+    fmax: '0.25'
+    comment: Lazo de portadora dirigido por decision + decisor
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1380
+    - 420
+    rotation: 0
+    state: enabled
+- name: salidas_libres
+  id: blocks_null_sink
+  parameters:
+    type: float
+    num_inputs: '2'
+    vlen: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1720
+    - 720
+    rotation: 0
+    state: enabled
+- name: ber_prbs
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      Decodificador de tramas de texto para el enlace 16-QAM (grupo A1-GI).
+
+      Trama del transmisor (8192 bits = 2048 simbolos 16-QAM):
+        SYNC (64 bits) | blanqueado( LONG(16) | ~LONG(16) | TEXTO UTF-8 | CRC32(32) | ceros de relleno )
+      El blanqueado es un XOR con la secuencia PRBS15: mantiene la senal "aleatoria" aunque el texto
+      se repita (espectro plano y transiciones para el sincronismo de simbolo).
+
+      Entrada: indices de simbolo decididos (0..15) a la salida del Constellation Receiver.
+      El lazo de portadora puede engancharse girado 0/90/180/270 grados: la palabra SYNC se busca en
+      las cuatro rotaciones y la que aparece fija la rotacion con que se leen las tramas.
+
+      Salidas (float, una muestra por simbolo):
+        0: tramas correctas (CRC bien)   1: tramas con error
+        2: BER medido sobre bits conocidos (SYNC + relleno)   3: rotacion detectada (0..3)
+      Puerto de mensaje 'texto': ultimo mensaje recibido con CRC correcto.
+      """
+      import zlib
+      import numpy as np
+      import pmt
+      from gnuradio import gr
+
+      TABLA = np.array([-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                        3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j]) / np.sqrt(10)
+      BITS_TRAMA = 8192
+      SIMB_TRAMA = BITS_TRAMA // 4
+
+
+      def _mapa(k):
+          q = TABLA * (1j ** k)
+          return np.array([np.argmin(np.abs(TABLA - v)) for v in q], dtype=np.uint8)
+
+
+      def _prbs15(n):
+          s = [1] * 15
+          out = []
+          for _ in range(n):
+              b = s[13] ^ s[14]
+              out.append(s[14])
+              s = [b] + s[:-1]
+          return np.array(out, dtype=np.uint8)
+
+
+      SYNC = np.random.RandomState(27145).randint(0, 2, 64).astype(np.uint8)
+      SYNC_SIMB = (SYNC.reshape(-1, 4) * np.array([8, 4, 2, 1])).sum(1).astype(np.uint8)
+      BLANQUEO = _prbs15(BITS_TRAMA - 64)
+      PESOS = np.array([3, 2, 1, 0], dtype=np.uint8)
+
+
+      def _entero(bits):
+          v = 0
+          for b in bits:
+              v = (v << 1) | int(b)
+          return v
+
+
+      class blk(gr.sync_block):
+          def __init__(self, ventana_tramas=50):
+              gr.sync_block.__init__(self, name='Decodificador de mensajes 16-QAM',
+                                     in_sig=[np.uint8], out_sig=[np.float32] * 4)
+              self.message_port_register_out(pmt.intern('texto'))
+              self.ventana_tramas = ventana_tramas
+              self._mapas = [_mapa(k) for k in range(4)]
+              self._buf = np.zeros(0, dtype=np.uint8)
+              self._enganchado = False
+              self._rot = 0
+              self._malas = 0
+              self._ok = 0
+              self._mal = 0
+              self._err = 0
+              self._nb = 0
+              self._tramas_ventana = 0
+              self._ber = 0.5
+              self._ultimo = None
+
+          def _buscar(self):
+              mejor = None
+              if len(self._buf) < 16:
+                  return None
+              for k in range(4):
+                  t = self._mapas[k][self._buf]
+                  v = np.lib.stride_tricks.sliding_window_view(t, 16)
+                  aciertos = (v == SYNC_SIMB).sum(axis=1)
+                  i = int(np.argmax(aciertos))
+                  if aciertos[i] >= 13 and (mejor is None or aciertos[i] > mejor[2] or
+                                            (aciertos[i] == mejor[2] and i < mejor[0])):
+                      mejor = (i, k, int(aciertos[i]))
+              return mejor
+
+          def _decodificar(self, trama):
+              idx = self._mapas[self._rot][trama]
+              bits = ((idx[:, None] >> PESOS) & 1).astype(np.uint8).ravel()
+              err_sync = int((bits[:64] ^ SYNC).sum())
+              cuerpo = bits[64:] ^ BLANQUEO
+              largo, largo_c = _entero(cuerpo[:16]), _entero(cuerpo[16:32])
+              err, nb = err_sync, 64
+              valida = False
+              if (largo ^ largo_c) == 0xFFFF and 32 + 8 * largo + 32 <= len(cuerpo):
+                  fin = 32 + 8 * largo
+                  datos = np.packbits(cuerpo[32:fin]).tobytes()
+                  crc = _entero(cuerpo[fin:fin + 32])
+                  relleno = cuerpo[fin + 32:]
+                  err += int(relleno.sum())
+                  nb += len(relleno)
+                  if zlib.crc32(datos) & 0xFFFFFFFF == crc:
+                      valida = True
+                      texto = datos.decode('utf-8', errors='replace')
+                      if texto != self._ultimo:
+                          self._ultimo = texto
+                          print('Mensaje recibido:', texto, flush=True)
+                          self.message_port_pub(pmt.intern('texto'), pmt.intern(texto))
+              if valida:
+                  self._ok += 1
+              else:
+                  self._mal += 1
+              self._err += err
+              self._nb += nb
+              self._tramas_ventana += 1
+              if self._tramas_ventana >= self.ventana_tramas:
+                  self._ber = self._err / max(self._nb, 1)
+                  self._err = self._nb = self._tramas_ventana = 0
+              # Perdida de enganche: SYNC muy danada en tres tramas seguidas
+              self._malas = self._malas + 1 if err_sync > 16 else 0
+              if self._malas >= 3:
+                  self._enganchado = False
+                  self._malas = 0
+
+          def work(self, input_items, output_items):
+              sym = input_items[0] & 0x0F
+              n = len(sym)
+              self._buf = np.concatenate([self._buf, sym])
+              while True:
+                  if not self._enganchado:
+                      hallado = self._buscar()
+                      if hallado is None:
+                          self._buf = self._buf[-15:]
+                          break
+                      self._buf = self._buf[hallado[0]:]
+                      self._rot = hallado[1]
+                      self._enganchado = True
+                  if len(self._buf) < SIMB_TRAMA:
+                      break
+                  trama, self._buf = self._buf[:SIMB_TRAMA], self._buf[SIMB_TRAMA:]
+                  self._decodificar(trama)
+              output_items[0][:] = self._ok
+              output_items[1][:] = self._mal
+              output_items[2][:] = self._ber
+              output_items[3][:] = self._rot
+              return n
+    ventana_tramas: '50'
+    affinity: ''
+    alias: ''
+    comment: Busca la palabra SYNC en las 4 rotaciones, verifica CRC32 y entrega el texto
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 870
+    - 700
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: ber_num
+  id: qtgui_number_sink
+  parameters:
+    name: '"Recepcion de tramas"'
+    type: float
+    nconnections: '4'
+    min: '0'
+    max: '1'
+    label1: Tramas correctas (CRC ok)
+    label2: Tramas con error
+    label3: BER (bits conocidos)
+    label4: Rotacion detectada
+    unit1: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    factor1: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    avg: '0'
+    update_time: '0.25'
+    autoscale: 'False'
+    gui_hint: 4,2,2,2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1200
+    - 680
+    rotation: 0
+    state: enabled
+- name: probe_ber
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1560
+    - 690
+    rotation: 0
+    state: enabled
+- name: probe_ok
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1560
+    - 780
+    rotation: 0
+    state: enabled
+- name: mensaje_rx
+  id: qtgui_edit_box_msg
+  parameters:
+    type: string
+    value: ''
+    label: '"Mensaje recibido"'
+    is_pair: 'False'
+    is_static: 'False'
+    key: ''
+    gui_hint: 7,0,1,4
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1200
+    - 880
+    rotation: 0
+    state: enabled
+- name: rx_punto_ideal
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    in_type: byte
+    out_type: complex
+    symbol_table: tabla_de_verdad_constelacion
+    dimension: '1'
+    num_ports: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 870
+    - 1060
+    rotation: 0
+    state: enabled
+- name: evm_error
+  id: blocks_sub_xx
+  parameters:
+    type: complex
+    num_inputs: '2'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1130
+    - 1060
+    rotation: 0
+    state: enabled
+- name: evm_mag2
+  id: blocks_complex_to_mag_squared
+  parameters:
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1300
+    - 1070
+    rotation: 0
+    state: enabled
+- name: evm_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    type: float
+    length: '20000'
+    scale: 1/20000
+    max_iter: '4000'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1040
+    rotation: 0
+    state: enabled
+- name: evm_raiz
+  id: blocks_transcendental
+  parameters:
+    type: float
+    name: sqrt
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1730
+    - 1060
+    rotation: 0
+    state: enabled
+- name: evm_pct
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: '100'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1730
+    - 1160
+    rotation: 0
+    state: enabled
+- name: cfo_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    type: float
+    length: '10000'
+    scale: 1/10000
+    max_iter: '4000'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 870
+    - 1260
+    rotation: 0
+    state: enabled
+- name: cfo_hz
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: -Rs/(2*math.pi)
+    vlen: '1'
+    comment: 'rad/simbolo -> Hz (signo: desfase del canal)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1130
+    - 1270
+    rotation: 0
+    state: enabled
+- name: medidas_num
+  id: qtgui_number_sink
+  parameters:
+    name: '"Medidas del enlace"'
+    type: float
+    nconnections: '2'
+    min: '-10000'
+    max: '10000'
+    label1: EVM rms [%]
+    label2: Desfase de portadora estimado [Hz]
+    unit1: '%'
+    unit2: Hz
+    factor1: '1'
+    factor2: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    avg: '0'
+    update_time: '0.25'
+    autoscale: 'False'
+    gui_hint: 6,2,1,2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1960
+    - 1140
+    rotation: 0
+    state: enabled
+- name: probe_evm
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1960
+    - 1040
+    rotation: 0
+    state: enabled
+- name: probe_cfo
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1400
+    - 1280
+    rotation: 0
+    state: enabled
+- name: const_sinc
+  id: qtgui_const_sink_x
+  parameters:
+    type: complex
+    name: '"Tras sincronismo de simbolo (antes del lazo de portadora)"'
+    size: '2048'
+    xmin: '-1.5'
+    xmax: '1.5'
+    ymin: '-1.5'
+    ymax: '1.5'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: '"Simbolos"'
+    grid: 'True'
+    legend: 'False'
+    update_time: '0.1'
+    marker1: '0'
+    style1: '0'
+    gui_hint: 4,0,3,1
+    axislabels: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1720
+    - 400
+    rotation: 0
+    state: enabled
+- name: const_rx
+  id: qtgui_const_sink_x
+  parameters:
+    type: complex
+    name: '"Constelacion recuperada"'
+    size: '2048'
+    xmin: '-1.5'
+    xmax: '1.5'
+    ymin: '-1.5'
+    ymax: '1.5'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: '"Rx"'
+    grid: 'True'
+    legend: 'False'
+    update_time: '0.1'
+    marker1: '0'
+    style1: '0'
+    gui_hint: 4,1,3,1
+    axislabels: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1720
+    - 560
+    rotation: 0
+    state: enabled
+connections:
+- - hackrf_rx
+  - '0'
+  - rx_traslacion
+  - '0'
+- - rx_traslacion
+  - '0'
+  - copia_grabar
+  - '0'
+- - copia_grabar
+  - '0'
+  - archivo
+  - '0'
+- - fuente_archivo
+  - '0'
+  - throttle_archivo
+  - '0'
+- - throttle_archivo
+  - '0'
+  - rx_agc_muestras
+  - '0'
+- - throttle_archivo
+  - '0'
+  - psd_rx
+  - '0'
+- - hackrf_rx
+  - '0'
+  - psd_hackrf
+  - '0'
+- - rx_traslacion
+  - '0'
+  - psd_rx
+  - '0'
+- - rx_portadora
+  - '1'
+  - salidas_libres
+  - '0'
+- - rx_portadora
+  - '2'
+  - salidas_libres
+  - '1'
+- - rx_traslacion
+  - '0'
+  - rx_agc_muestras
+  - '0'
+- - rx_agc_muestras
+  - '0'
+  - rx_sinc_simbolo
+  - '0'
+- - rx_sinc_simbolo
+  - '0'
+  - rx_agc_simbolos
+  - '0'
+- - rx_agc_simbolos
+  - '0'
+  - rx_portadora
+  - '0'
+- - rx_portadora
+  - '0'
+  - ber_prbs
+  - '0'
+- - ber_prbs
+  - '0'
+  - ber_num
+  - '0'
+- - ber_prbs
+  - '1'
+  - ber_num
+  - '1'
+- - ber_prbs
+  - '2'
+  - ber_num
+  - '2'
+- - ber_prbs
+  - '3'
+  - ber_num
+  - '3'
+- - ber_prbs
+  - '2'
+  - probe_ber
+  - '0'
+- - ber_prbs
+  - '0'
+  - probe_ok
+  - '0'
+- - ber_prbs
+  - texto
+  - mensaje_rx
+  - val
+- - rx_portadora
+  - '0'
+  - rx_punto_ideal
+  - '0'
+- - rx_portadora
+  - '4'
+  - evm_error
+  - '0'
+- - rx_punto_ideal
+  - '0'
+  - evm_error
+  - '1'
+- - evm_error
+  - '0'
+  - evm_mag2
+  - '0'
+- - evm_mag2
+  - '0'
+  - evm_promedio
+  - '0'
+- - evm_promedio
+  - '0'
+  - evm_raiz
+  - '0'
+- - evm_raiz
+  - '0'
+  - evm_pct
+  - '0'
+- - rx_portadora
+  - '3'
+  - cfo_promedio
+  - '0'
+- - cfo_promedio
+  - '0'
+  - cfo_hz
+  - '0'
+- - evm_pct
+  - '0'
+  - medidas_num
+  - '0'
+- - cfo_hz
+  - '0'
+  - medidas_num
+  - '1'
+- - evm_pct
+  - '0'
+  - probe_evm
+  - '0'
+- - cfo_hz
+  - '0'
+  - probe_cfo
+  - '0'
+- - rx_agc_simbolos
+  - '0'
+  - const_sinc
+  - '0'
+- - rx_portadora
+  - '4'
+  - const_rx
+  - '0'
+metadata:
+  file_format: 1
+  grc_version: 3.10.9.2

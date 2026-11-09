@@ -1,0 +1,37 @@
+FASE 4 (Guia 4A actualizada) - Grupo A1-GI - BER + SER + CSV de metricas
+
+ARCHIVOS
+ Fase4_Rx_16QAM_BER_SER_HackRF.grc   -> el del laboratorio (PC Ubuntu con HackRF). Abrir desde la carpeta donde esta la carpeta del lab (lab.py).
+ Fase4_Enlace_BER_SER_Simulado.grc   -> misma instrumentacion sobre el enlace simulado (para probar sin radios).
+ e_Metricas_Sistema_CSV.py           -> bloque del CSV (ya incluido dentro de los .grc).
+ analizar_metricas.py                -> analiza el CSV: curvas BER/SER vs teoria, penalizacion, SNR medida, dispersion I/Q.
+ referencia_simulada_metricas.csv    -> CSV de ejemplo obtenido en simulacion (150 s).
+
+QUE HACE (segun la guia)
+ e_EbN0_Sweep (0-14 dB, paso 1) -> receptor.  e_BER_Curve + QT GUI (curva BER).  Ademas curva SER (pedida por el profesor).
+ e_Metricas_Sistema_CSV escribe metricas_sistema_GrupoA1-GI.csv con: modulation_type, bits_per_symbol_m, samp_rate_hz,
+ symbol_rate_rs_baud, bandwidth_bw_hz, amplitude_a_v, ebn0_db, noise_variance_sigma2, measured_snr_db, measured_ber,
+ measured_ser, iq_dispersion_rms. Una fila por cada punto del barrido y por cada vuelta (overwrite_on_start = True).
+ Variables reales: modulation_type="16QAM", bps=4, bb_rate=2,5 MS/s, Rs=625 kbaud, Rb=2,5 Mb/s, BW=Rs(1+beta)=843,75 kHz, A=1.
+ delay_bits = delay_symbols = 0 porque e_Alinea_Ref alinea Tx/Rx automaticamente (se ve el desfase en pantalla).
+
+DIFERENCIAS CON LA PLANTILLA DEL PROFESOR (a mencionar en el informe)
+ 1. bits_guardia = 20000 (la guia dice 1000): con 1000 la curva se satura en ~9e-3 porque el lazo de portadora tarda en
+    reenganchar tras cada cambio de Eb/N0 (verificado en simulacion). Si el profesor exige 1000, cambiar la variable bits_guardia.
+ 2. e_Metricas_Sistema_CSV es de elaboracion propia (el archivo del profesor no llego): mismas columnas y mismo nombre; sus
+    entradas van a tasa de simbolo y el BER se obtiene de los indices de simbolo (identico a comparar bits).
+    Si el profesor entrega su bloque, se reemplaza en el flujograma.
+ 3. Se usa e_Alinea_Ref en vez de calibrar delay_bits a mano (Tx y Rx estan en PC distintos).
+
+EN EL LABORATORIO
+ - Tx (USRP) con el mismo texto que la variable mensaje_ref del Rx.  Dejar correr varios barridos (>= 2-3 minutos).
+ - Recoger metricas_sistema_GrupoA1-GI.csv (queda junto al .py generado) y subirlo a GitHub con el .grc.
+ - python3 analizar_metricas.py metricas_sistema_GrupoA1-GI.csv
+
+SI EL RECEPTOR EN VIVO MUESTRA "OOOO" (OVERFLOW) O SE CONGELA: MEDIR DESDE ARCHIVO (recomendado)
+ El instrumento en vivo es demasiado pesado para el PC con HackRF a 5 MS/s. Solucion en 2 pasos (el Tx sigue transmitiendo igual):
+ 1. PC Ubuntu: abrir el receptor de la Fase 3 (el liviano), marcar "Grabar IQ en archivo" durante ~30 s con el enlace estable
+    (se crea captura_hackrf_iq_2500kSps.cfile en la carpeta de ejecucion, ~600 MB). Parar la grabacion/ejecucion.
+ 2. En la MISMA carpeta abrir Fase4_Repeticion_BER_SER_desde_archivo.grc y ejecutar: repite el archivo, aplica el barrido de
+    Eb/N0 (en muestras, no en tiempo real) y escribe metricas_sistema_GrupoA1-GI.csv. Dejar correr 2-3 minutos.
+ Es la misma medicion hibrida (imperfecciones reales del radio + ruido controlado), repetible y sin perdida de muestras.

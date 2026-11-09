@@ -1,0 +1,3014 @@
+options:
+  parameters:
+    author: Grupo A1-GI
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: Copia del sistema funcional de la Fase 3 con la instrumentacion Guia 4A (e_EbN0_Sweep, e_Alinea_Ref, e_BER_Curve, e_SER_Curve, e_Metricas_Sistema_CSV)
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: Fase4_Enlace_BER_SER_Simulado
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Fase 4 A1-GI - Enlace 16-QAM simulado con medicion BER/SER vs Eb/N0
+    window_size: (1700,1300)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 8
+    - 8
+    rotation: 0
+    state: enabled
+blocks:
+- name: div
+  id: variable
+  parameters:
+    value: '40'
+    comment: 'Divisor del reloj maestro (100 MHz) del USRP-2920: 8 -> 12,5 MS/s; 40 -> 2,5 MS/s (modo seguro)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 8
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    value: 100e6/div
+    comment: El USRP solo admite 100 MHz / N
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 8
+    rotation: 0
+    state: enabled
+- name: Sps
+  id: variable
+  parameters:
+    value: '4'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rs
+  id: variable
+  parameters:
+    value: samp_rate/Sps
+    comment: Rs = 625 kbaud con div = 40
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 8
+    rotation: 0
+    state: enabled
+- name: tabla_de_verdad_constelacion
+  id: variable
+  parameters:
+    value: lab.TABLA
+    comment: 16QAM Gray normalizada (misma de la Fase 2)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 640
+    - 8
+    rotation: 0
+    state: enabled
+- name: M
+  id: variable
+  parameters:
+    value: len(tabla_de_verdad_constelacion)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 8
+    rotation: 0
+    state: enabled
+- name: bps
+  id: variable
+  parameters:
+    value: int(math.log(M,2))
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1010
+    - 8
+    rotation: 0
+    state: enabled
+- name: Rb
+  id: variable
+  parameters:
+    value: Rs*bps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1120
+    - 8
+    rotation: 0
+    state: enabled
+- name: span
+  id: variable
+  parameters:
+    value: '11'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 8
+    rotation: 0
+    state: enabled
+- name: beta
+  id: variable
+  parameters:
+    value: '0.35'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1320
+    - 8
+    rotation: 0
+    state: enabled
+- name: rrc_tx_taps
+  id: variable_rrc_filter_taps
+  parameters:
+    gain: Sps
+    samp_rate: samp_rate
+    sym_rate: Rs
+    alpha: beta
+    ntaps: span*Sps
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1410
+    - 8
+    rotation: 0
+    state: enabled
+- name: fc
+  id: variable
+  parameters:
+    value: 920e6
+    comment: 'Banda de uso libre 915-928 MHz (Res. ANE 105/2020): canal 919,58-920,42 MHz'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 100
+    rotation: 0
+    state: enabled
+- name: lo_off
+  id: variable
+  parameters:
+    value: -8e6
+    comment: 'LO en 912 MHz: la fuga del oscilador queda fuera del canal (ojo: 912 MHz esta fuera de 915-928 MHz; +6e6 la dejaria dentro)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 290
+    - 100
+    rotation: 0
+    state: enabled
+- name: usrp_addr
+  id: variable
+  parameters:
+    value: '"addr=192.168.10.2"'
+    comment: IP por defecto del NI USRP-2920
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 400
+    - 100
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    imports: |-
+      import math
+      from gnuradio import digital
+      from gnuradio.filter import firdes
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1650
+    - 8
+    rotation: 0
+    state: enabled
+- name: lab
+  id: epy_module
+  parameters:
+    source_code: |
+      """Utilidades del enlace 16-QAM del grupo A1-GI (Fase 3, laboratorio)."""
+      import math
+
+      # Constelacion 16-QAM Gray normalizada (Es = 1): b3b2 -> I, b1b0 -> Q
+      TABLA = [p / math.sqrt(10) for p in (-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                                             3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j)]
+
+
+      def prbs15():
+          """Secuencia PRBS15 (x^15 + x^14 + 1), periodo 32767 bits: b[n] = b[n-14] xor b[n-15]."""
+          s = [1] * 15
+          out = []
+          for _ in range(2 ** 15 - 1):
+              b = s[13] ^ s[14]
+              out.append(s[14])
+              s = [b] + s[:-1]
+          return out
+
+
+      def mapa_rotacion(k):
+          """Indice del punto que resulta de rotar cada punto k*90 grados."""
+          r = []
+          for p in TABLA:
+              q = p * (1j ** k)
+              r.append(min(range(16), key=lambda i: abs(q - TABLA[i])))
+          return r
+
+
+      # ---------------- Tramas de texto (transmisor con mensaje) ----------------
+      import zlib as _zlib
+
+      BITS_TRAMA = 8192                 # 2048 simbolos 16-QAM por trama
+      MAX_BYTES = (BITS_TRAMA - 64 - 32 - 32) // 8   # 1008 bytes de texto
+      import numpy as _np
+      SYNC = [int(b) for b in _np.random.RandomState(27145).randint(0, 2, 64)]   # palabra de sincronismo
+      _BLANQUEO = None
+
+
+      def _bits(valor, n):
+          return [(valor >> (n - 1 - i)) & 1 for i in range(n)]
+
+
+      def trama_bits(mensaje):
+          """SYNC(64) | blanqueado( LONG(16) | ~LONG(16) | TEXTO | CRC32 | relleno ) = 8192 bits."""
+          global _BLANQUEO
+          if _BLANQUEO is None:
+              _BLANQUEO = prbs15()[:BITS_TRAMA - 64]
+          datos = str(mensaje).encode('utf-8')[:MAX_BYTES]
+          largo = len(datos)
+          cuerpo = _bits(largo, 16) + _bits(largo ^ 0xFFFF, 16)
+          for byte in datos:
+              cuerpo += _bits(byte, 8)
+          cuerpo += _bits(_zlib.crc32(datos) & 0xFFFFFFFF, 32)
+          cuerpo += [0] * (BITS_TRAMA - 64 - len(cuerpo))
+          return SYNC + [c ^ w for c, w in zip(cuerpo, _BLANQUEO)]
+
+
+      def trama_bytes(mensaje):
+          """La misma trama empaquetada en 1024 bytes (MSB primero). Cada byte = 2 simbolos 16-QAM,
+          asi un cambio de mensaje en vivo nunca parte un simbolo por la mitad."""
+          b = trama_bits(mensaje)
+          return [sum(b[i + j] << (7 - j) for j in range(8)) for i in range(0, len(b), 8)]
+    comment: Tabla, PRBS15 y utilidades
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1650
+    - 100
+    rotation: 0
+    state: enabled
+- name: tx_escala
+  id: variable
+  parameters:
+    value: '0.45'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1250
+    - 190
+    rotation: 0
+    state: enabled
+- name: mensaje
+  id: variable_qtgui_entry
+  parameters:
+    label: Mensaje a transmitir (escriba y presione Enter)
+    type: string
+    value: '"Hola desde el grupo A1-GI: enlace 16-QAM USRP -> HackRF"'
+    entry_signal: editingFinished
+    gui_hint: 6,0,1,4
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 280
+    rotation: 0
+    state: enabled
+- name: EsN0_dB
+  id: variable_qtgui_range
+  parameters:
+    label: Es/N0 [dB]
+    start: '5'
+    stop: '40'
+    step: '0.5'
+    value: '25'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,0,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 680
+    - 190
+    rotation: 0
+    state: enabled
+- name: desfase_hz
+  id: variable_qtgui_range
+  parameters:
+    label: Desfase de portadora [Hz]
+    start: '-20000'
+    stop: '20000'
+    step: '500'
+    value: '4000'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,1,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 190
+    rotation: 0
+    state: enabled
+- name: ppm_reloj
+  id: variable_qtgui_range
+  parameters:
+    label: Error de reloj [ppm]
+    start: '-20'
+    stop: '20'
+    step: '1'
+    value: '5'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 1,0,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1120
+    - 190
+    rotation: 0
+    state: enabled
+- name: ruido_v
+  id: variable
+  parameters:
+    value: math.sqrt(tx_escala**2*sum(t*t for t in rrc_tx_taps)/10**(EsN0_dB/10))
+    comment: Es/N0 referido a la senal escalada
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1350
+    - 280
+    rotation: 0
+    state: enabled
+- name: fuente_prbs
+  id: blocks_vector_source_x
+  parameters:
+    type: byte
+    vector: lab.trama_bytes(mensaje)
+    repeat: 'True'
+    tags: '[]'
+    vlen: '1'
+    comment: Trama de 1024 bytes con el texto escrito en la ventana (SYNC + longitud + texto + CRC32, blanqueada con PRBS15)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 0
+    - 330
+    rotation: 0
+    state: enabled
+- name: bits_to_symbols
+  id: blocks_repack_bits_bb
+  parameters:
+    k: '8'
+    l: bps
+    endianness: gr.GR_MSB_FIRST
+    align_output: 'False'
+    len_tag_key: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 230
+    - 330
+    rotation: 0
+    state: enabled
+- name: digital_chunks_to_symbols_xx_0
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    in_type: byte
+    out_type: complex
+    symbol_table: tabla_de_verdad_constelacion
+    dimension: '1'
+    num_ports: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 450
+    - 340
+    rotation: 0
+    state: enabled
+- name: rrc_tx
+  id: interp_fir_filter_xxx
+  parameters:
+    type: ccf
+    interp: Sps
+    taps: rrc_tx_taps
+    samp_delay: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 720
+    - 330
+    rotation: 0
+    state: enabled
+- name: escala_tx
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: complex
+    const: tx_escala
+    vlen: '1'
+    comment: 'Pico de la senal RRC ~2: x0,45 evita saturar el DAC (|x|<1)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 950
+    - 330
+    rotation: 0
+    state: enabled
+- name: throttle_0
+  id: blocks_throttle2
+  parameters:
+    type: complex
+    samples_per_second: 1e9
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    vlen: '1'
+    comment: 'Sin limite practico: la simulacion corre a la velocidad del CPU'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1180
+    - 330
+    rotation: 0
+    state: enabled
+- name: canal_radio
+  id: channels_channel_model
+  parameters:
+    noise_voltage: ruido_v
+    freq_offset: desfase_hz/samp_rate
+    epsilon: 1+ppm_reloj*1e-6
+    taps: '[1.0]'
+    seed: '0'
+    block_tags: 'False'
+    comment: Imita dos radios independientes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1400
+    - 330
+    rotation: 0
+    state: enabled
+- name: psd_rx
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '"Espectro a la entrada del receptor"'
+    fftsize: '2048'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: '0'
+    bw: samp_rate
+    average: '0.2'
+    ymin: '-120'
+    ymax: '0'
+    nconnections: '1'
+    autoscale: 'False'
+    grid: 'True'
+    legend: 'True'
+    units: dB
+    update_time: '0.1'
+    showports: 'False'
+    freqhalf: 'True'
+    ctrlpanel: 'False'
+    norm_window: 'False'
+    gui_hint: 2,0,1,4
+    axislabels: 'True'
+    label1: Senal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1650
+    - 330
+    rotation: 0
+    state: enabled
+- name: nfilts
+  id: variable
+  parameters:
+    value: '32'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 100
+    rotation: 0
+    state: enabled
+- name: rrc_mf_taps
+  id: variable
+  parameters:
+    value: firdes.root_raised_cosine(nfilts, nfilts*samp_rate, Rs, beta, span*Sps*nfilts)
+    comment: Filtro acoplado RRC dentro del Symbol Sync
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 620
+    - 100
+    rotation: 0
+    state: enabled
+- name: constelacion_16qam
+  id: variable
+  parameters:
+    value: digital.constellation_calcdist(tabla_de_verdad_constelacion, [], 4, 1, digital.constellation.NO_NORMALIZATION)
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 930
+    - 100
+    rotation: 0
+    state: enabled
+- name: ref_agc
+  id: variable
+  parameters:
+    value: sum(abs(p) for p in tabla_de_verdad_constelacion)/M
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1250
+    - 100
+    rotation: 0
+    state: enabled
+- name: lazo_simbolo
+  id: variable_qtgui_range
+  parameters:
+    label: Ancho de lazo sincronismo de simbolo
+    start: '0.005'
+    stop: '0.1'
+    step: '0.005'
+    value: '0.02'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,2,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 180
+    - 190
+    rotation: 0
+    state: enabled
+- name: lazo_portadora
+  id: variable_qtgui_range
+  parameters:
+    label: Ancho de lazo de portadora [rad/simb]
+    start: '0.002'
+    stop: '0.06'
+    step: '0.001'
+    value: '0.016'
+    rangeType: float
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '200'
+    gui_hint: 0,3,1,1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 430
+    - 190
+    rotation: 0
+    state: enabled
+- name: rx_agc_muestras
+  id: analog_agc2_xx
+  parameters:
+    type: complex
+    attack_rate: 1e-1
+    decay_rate: 1e-2
+    reference: '1.0'
+    gain: '1.0'
+    max_gain: '65536'
+    comment: Normaliza el nivel recibido
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 280
+    - 700
+    rotation: 0
+    state: enabled
+- name: rx_sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    type: cc
+    ted_type: digital.TED_GARDNER
+    constellation: constelacion_16qam
+    sps: Sps
+    ted_gain: '1.0'
+    loop_bw: lazo_simbolo
+    damping: '1.0'
+    max_dev: '1.5'
+    osps: '1'
+    resamp_type: digital.IR_PFB_MF
+    nfilters: nfilts
+    pfb_mf_taps: rrc_mf_taps
+    comment: Filtro acoplado RRC + recuperacion de reloj (Gardner)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 510
+    - 700
+    rotation: 0
+    state: enabled
+- name: rx_agc_simbolos
+  id: analog_agc_xx
+  parameters:
+    type: complex
+    rate: 1e-3
+    reference: ref_agc
+    gain: '1.0'
+    max_gain: '1000'
+    comment: AGC de la Fase 2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 780
+    - 700
+    rotation: 0
+    state: enabled
+- name: rx_portadora
+  id: digital_constellation_receiver_cb
+  parameters:
+    constellation: constelacion_16qam
+    loop_bw: lazo_portadora
+    fmin: '-0.25'
+    fmax: '0.25'
+    comment: Lazo de portadora dirigido por decision + decisor
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1000
+    - 700
+    rotation: 0
+    state: enabled
+- name: salidas_libres
+  id: blocks_null_sink
+  parameters:
+    type: float
+    num_inputs: '2'
+    vlen: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1330
+    - 610
+    rotation: 0
+    state: enabled
+- name: ber_prbs
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      Decodificador de tramas de texto para el enlace 16-QAM (grupo A1-GI).
+
+      Trama del transmisor (8192 bits = 2048 simbolos 16-QAM):
+        SYNC (64 bits) | blanqueado( LONG(16) | ~LONG(16) | TEXTO UTF-8 | CRC32(32) | ceros de relleno )
+      El blanqueado es un XOR con la secuencia PRBS15: mantiene la senal "aleatoria" aunque el texto
+      se repita (espectro plano y transiciones para el sincronismo de simbolo).
+
+      Entrada: indices de simbolo decididos (0..15) a la salida del Constellation Receiver.
+      El lazo de portadora puede engancharse girado 0/90/180/270 grados: la palabra SYNC se busca en
+      las cuatro rotaciones y la que aparece fija la rotacion con que se leen las tramas.
+
+      Salidas (float, una muestra por simbolo):
+        0: tramas correctas (CRC bien)   1: tramas con error
+        2: BER medido sobre bits conocidos (SYNC + relleno)   3: rotacion detectada (0..3)
+      Puerto de mensaje 'texto': ultimo mensaje recibido con CRC correcto.
+      """
+      import zlib
+      import numpy as np
+      import pmt
+      from gnuradio import gr
+
+      TABLA = np.array([-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                        3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j]) / np.sqrt(10)
+      BITS_TRAMA = 8192
+      SIMB_TRAMA = BITS_TRAMA // 4
+
+
+      def _mapa(k):
+          q = TABLA * (1j ** k)
+          return np.array([np.argmin(np.abs(TABLA - v)) for v in q], dtype=np.uint8)
+
+
+      def _prbs15(n):
+          s = [1] * 15
+          out = []
+          for _ in range(n):
+              b = s[13] ^ s[14]
+              out.append(s[14])
+              s = [b] + s[:-1]
+          return np.array(out, dtype=np.uint8)
+
+
+      SYNC = np.random.RandomState(27145).randint(0, 2, 64).astype(np.uint8)
+      SYNC_SIMB = (SYNC.reshape(-1, 4) * np.array([8, 4, 2, 1])).sum(1).astype(np.uint8)
+      BLANQUEO = _prbs15(BITS_TRAMA - 64)
+      PESOS = np.array([3, 2, 1, 0], dtype=np.uint8)
+
+
+      def _entero(bits):
+          v = 0
+          for b in bits:
+              v = (v << 1) | int(b)
+          return v
+
+
+      class blk(gr.sync_block):
+          def __init__(self, ventana_tramas=50):
+              gr.sync_block.__init__(self, name='Decodificador de mensajes 16-QAM',
+                                     in_sig=[np.uint8], out_sig=[np.float32] * 4)
+              self.message_port_register_out(pmt.intern('texto'))
+              self.ventana_tramas = ventana_tramas
+              self._mapas = [_mapa(k) for k in range(4)]
+              self._buf = np.zeros(0, dtype=np.uint8)
+              self._enganchado = False
+              self._rot = 0
+              self._malas = 0
+              self._ok = 0
+              self._mal = 0
+              self._err = 0
+              self._nb = 0
+              self._tramas_ventana = 0
+              self._ber = 0.5
+              self._ultimo = None
+
+          def _buscar(self):
+              mejor = None
+              if len(self._buf) < 16:
+                  return None
+              for k in range(4):
+                  t = self._mapas[k][self._buf]
+                  v = np.lib.stride_tricks.sliding_window_view(t, 16)
+                  aciertos = (v == SYNC_SIMB).sum(axis=1)
+                  i = int(np.argmax(aciertos))
+                  if aciertos[i] >= 13 and (mejor is None or aciertos[i] > mejor[2] or
+                                            (aciertos[i] == mejor[2] and i < mejor[0])):
+                      mejor = (i, k, int(aciertos[i]))
+              return mejor
+
+          def _decodificar(self, trama):
+              idx = self._mapas[self._rot][trama]
+              bits = ((idx[:, None] >> PESOS) & 1).astype(np.uint8).ravel()
+              err_sync = int((bits[:64] ^ SYNC).sum())
+              cuerpo = bits[64:] ^ BLANQUEO
+              largo, largo_c = _entero(cuerpo[:16]), _entero(cuerpo[16:32])
+              err, nb = err_sync, 64
+              valida = False
+              if (largo ^ largo_c) == 0xFFFF and 32 + 8 * largo + 32 <= len(cuerpo):
+                  fin = 32 + 8 * largo
+                  datos = np.packbits(cuerpo[32:fin]).tobytes()
+                  crc = _entero(cuerpo[fin:fin + 32])
+                  relleno = cuerpo[fin + 32:]
+                  err += int(relleno.sum())
+                  nb += len(relleno)
+                  if zlib.crc32(datos) & 0xFFFFFFFF == crc:
+                      valida = True
+                      texto = datos.decode('utf-8', errors='replace')
+                      if texto != self._ultimo:
+                          self._ultimo = texto
+                          print('Mensaje recibido:', texto, flush=True)
+                          self.message_port_pub(pmt.intern('texto'), pmt.intern(texto))
+              if valida:
+                  self._ok += 1
+              else:
+                  self._mal += 1
+              self._err += err
+              self._nb += nb
+              self._tramas_ventana += 1
+              if self._tramas_ventana >= self.ventana_tramas:
+                  self._ber = self._err / max(self._nb, 1)
+                  self._err = self._nb = self._tramas_ventana = 0
+              # Perdida de enganche: SYNC muy danada en tres tramas seguidas
+              self._malas = self._malas + 1 if err_sync > 16 else 0
+              if self._malas >= 3:
+                  self._enganchado = False
+                  self._malas = 0
+
+          def work(self, input_items, output_items):
+              sym = input_items[0] & 0x0F
+              n = len(sym)
+              self._buf = np.concatenate([self._buf, sym])
+              while True:
+                  if not self._enganchado:
+                      hallado = self._buscar()
+                      if hallado is None:
+                          self._buf = self._buf[-15:]
+                          break
+                      self._buf = self._buf[hallado[0]:]
+                      self._rot = hallado[1]
+                      self._enganchado = True
+                  if len(self._buf) < SIMB_TRAMA:
+                      break
+                  trama, self._buf = self._buf[:SIMB_TRAMA], self._buf[SIMB_TRAMA:]
+                  self._decodificar(trama)
+              output_items[0][:] = self._ok
+              output_items[1][:] = self._mal
+              output_items[2][:] = self._ber
+              output_items[3][:] = self._rot
+              return n
+    ventana_tramas: '50'
+    affinity: ''
+    alias: ''
+    comment: Busca la palabra SYNC en las 4 rotaciones, verifica CRC32 y entrega el texto
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1330
+    - 880
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: ber_num
+  id: qtgui_number_sink
+  parameters:
+    name: '"Recepcion de tramas"'
+    type: float
+    nconnections: '4'
+    min: '0'
+    max: '1'
+    label1: Tramas correctas (CRC ok)
+    label2: Tramas con error
+    label3: BER (bits conocidos)
+    label4: Rotacion detectada
+    unit1: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    factor1: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    avg: '0'
+    update_time: '0.25'
+    autoscale: 'False'
+    gui_hint: 3,2,2,2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2380
+    - 860
+    rotation: 0
+    state: enabled
+- name: probe_ber
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1680
+    - 1030
+    rotation: 0
+    state: enabled
+- name: probe_ok
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1680
+    - 1100
+    rotation: 0
+    state: enabled
+- name: mensaje_rx
+  id: qtgui_edit_box_msg
+  parameters:
+    type: string
+    value: ''
+    label: '"Mensaje recibido"'
+    is_pair: 'False'
+    is_static: 'False'
+    key: ''
+    gui_hint: 7,0,1,4
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2380
+    - 1060
+    rotation: 0
+    state: enabled
+- name: rx_punto_ideal
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    in_type: byte
+    out_type: complex
+    symbol_table: tabla_de_verdad_constelacion
+    dimension: '1'
+    num_ports: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1330
+    - 760
+    rotation: 0
+    state: enabled
+- name: evm_error
+  id: blocks_sub_xx
+  parameters:
+    type: complex
+    num_inputs: '2'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1580
+    - 740
+    rotation: 0
+    state: enabled
+- name: evm_mag2
+  id: blocks_complex_to_mag_squared
+  parameters:
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1730
+    - 750
+    rotation: 0
+    state: enabled
+- name: evm_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    type: float
+    length: '20000'
+    scale: 1/20000
+    max_iter: '4000'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1900
+    - 730
+    rotation: 0
+    state: enabled
+- name: evm_raiz
+  id: blocks_transcendental
+  parameters:
+    type: float
+    name: sqrt
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2110
+    - 750
+    rotation: 0
+    state: enabled
+- name: evm_pct
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: '100'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2110
+    - 830
+    rotation: 0
+    state: enabled
+- name: cfo_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    type: float
+    length: '10000'
+    scale: 1/10000
+    max_iter: '4000'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1330
+    - 1140
+    rotation: 0
+    state: enabled
+- name: cfo_hz
+  id: blocks_multiply_const_vxx
+  parameters:
+    type: float
+    const: -Rs/(2*math.pi)
+    vlen: '1'
+    comment: 'rad/simbolo -> Hz (signo: desfase del canal)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1580
+    - 1150
+    rotation: 0
+    state: enabled
+- name: medidas_num
+  id: qtgui_number_sink
+  parameters:
+    name: '"Medidas del enlace"'
+    type: float
+    nconnections: '2'
+    min: '-10000'
+    max: '10000'
+    label1: EVM rms [%]
+    label2: Desfase de portadora estimado [Hz]
+    unit1: '%'
+    unit2: Hz
+    factor1: '1'
+    factor2: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    avg: '0'
+    update_time: '0.25'
+    autoscale: 'False'
+    gui_hint: 5,2,1,2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2380
+    - 960
+    rotation: 0
+    state: enabled
+- name: probe_evm
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2330
+    - 900
+    rotation: 0
+    state: enabled
+- name: probe_cfo
+  id: blocks_probe_signal_x
+  parameters:
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1830
+    - 1220
+    rotation: 0
+    state: enabled
+- name: const_sinc
+  id: qtgui_const_sink_x
+  parameters:
+    type: complex
+    name: '"Tras sincronismo de simbolo (antes del lazo de portadora)"'
+    size: '2048'
+    xmin: '-1.5'
+    xmax: '1.5'
+    ymin: '-1.5'
+    ymax: '1.5'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: '"Simbolos"'
+    grid: 'True'
+    legend: 'False'
+    update_time: '0.1'
+    marker1: '0'
+    style1: '0'
+    gui_hint: 3,0,3,1
+    axislabels: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2380
+    - 640
+    rotation: 0
+    state: enabled
+- name: const_rx
+  id: qtgui_const_sink_x
+  parameters:
+    type: complex
+    name: '"Constelacion recuperada"'
+    size: '2048'
+    xmin: '-1.5'
+    xmax: '1.5'
+    ymin: '-1.5'
+    ymax: '1.5'
+    autoscale: 'False'
+    nconnections: '1'
+    label1: '"Rx"'
+    grid: 'True'
+    legend: 'False'
+    update_time: '0.1'
+    marker1: '0'
+    style1: '0'
+    gui_hint: 3,1,3,1
+    axislabels: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 2380
+    - 750
+    rotation: 0
+    state: enabled
+- name: EbN0_min
+  id: variable
+  parameters:
+    value: '0.0'
+    comment: Inicio del barrido [dB]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 10
+    - 1330
+    rotation: 0
+    state: enabled
+- name: EbN0_max
+  id: variable
+  parameters:
+    value: '14.0'
+    comment: Fin del barrido [dB]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 140
+    - 1330
+    rotation: 0
+    state: enabled
+- name: EbN0_step
+  id: variable
+  parameters:
+    value: '1.0'
+    comment: 'Paso [dB]: 15 puntos'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 1330
+    rotation: 0
+    state: enabled
+- name: N_EbN0
+  id: variable
+  parameters:
+    value: int(round((EbN0_max-EbN0_min)/EbN0_step))+1
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 400
+    - 1330
+    rotation: 0
+    state: enabled
+- name: bb_rate
+  id: variable
+  parameters:
+    value: samp_rate
+    comment: Tasa I/Q justo antes del receptor digital = 2,5 MS/s
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 530
+    - 1330
+    rotation: 0
+    state: enabled
+- name: simbolos_por_punto
+  id: variable
+  parameters:
+    value: '25000'
+    comment: Simbolos evaluados por punto (25000 simbolos = 100000 bits)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 660
+    - 1330
+    rotation: 0
+    state: enabled
+- name: bits_por_punto
+  id: variable
+  parameters:
+    value: 4*simbolos_por_punto
+    comment: Equivalente en bits (lo usa e_EbN0_Sweep)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 700
+    - 1330
+    rotation: 0
+    state: enabled
+- name: simbolos_guardia
+  id: variable
+  parameters:
+    value: '5000'
+    comment: Simbolos ignorados tras cambiar Eb/N0 (lazo de portadora; 5000 simbolos = 20000 bits)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 790
+    - 1330
+    rotation: 0
+    state: enabled
+- name: bits_guardia
+  id: variable
+  parameters:
+    value: 4*simbolos_guardia
+    comment: Equivalente en bits (lo usa e_EbN0_Sweep)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 830
+    - 1330
+    rotation: 0
+    state: enabled
+- name: delay_simbolos
+  id: variable
+  parameters:
+    value: '0'
+    comment: 'delay_symbols: la alineacion Tx/Rx la hace e_Alinea_Ref (queda en 0)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 920
+    - 1330
+    rotation: 0
+    state: enabled
+- name: delay_bits
+  id: variable
+  parameters:
+    value: '0'
+    comment: 'delay_bits: la alineacion Tx/Rx la hace e_Alinea_Ref (queda en 0)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 960
+    - 1330
+    rotation: 0
+    state: enabled
+- name: modulation_type
+  id: variable
+  parameters:
+    value: '"16QAM"'
+    comment: Modulacion real del proyecto
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1180
+    - 1230
+    rotation: 0
+    state: enabled
+- name: bandwidth_bw_hz
+  id: variable
+  parameters:
+    value: Rs*(1+beta)
+    comment: Ancho de banda = Rs(1+beta) = 844 kHz
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1310
+    - 1230
+    rotation: 0
+    state: enabled
+- name: amplitude_a_v
+  id: variable
+  parameters:
+    value: '1.0'
+    comment: 'Amplitud de referencia: constelacion normalizada con Es = 1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1440
+    - 1230
+    rotation: 0
+    state: enabled
+- name: bits_per_record
+  id: variable
+  parameters:
+    value: bits_por_punto
+    comment: Debe ser igual a bits_por_punto
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1570
+    - 1230
+    rotation: 0
+    state: enabled
+- name: update_every
+  id: variable
+  parameters:
+    value: '1000'
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1050
+    - 1330
+    rotation: 0
+    state: enabled
+- name: mensaje_ref
+  id: variable
+  parameters:
+    value: '"Hola desde el grupo A1-GI: enlace 16-QAM USRP -> HackRF"'
+    comment: 'Texto de la trama que el transmisor repite: DEBE ser el mismo que el del transmisor'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1180
+    - 1330
+    rotation: 0
+    state: enabled
+- name: curva_teorica
+  id: variable
+  parameters:
+    value: '[math.log10(max(1-(1-0.75*math.erfc(math.sqrt(0.4*10**((EbN0_min+EbN0_step*i)/10.0))))**2, 1e-12)) for i in range(N_EbN0)]'
+    comment: '16-QAM en AWGN: Ps = 1-(1-p)^2, p = 3/4 erfc(sqrt(0.4 Eb/N0))'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1330
+    rotation: 0
+    state: enabled
+- name: e_EbN0_Sweep
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      e_EbN0_Sweep
+      Instrumento para caracterización BER con un enlace SDR ya funcional.
+
+      Entrada 0 : señal compleja I/Q recibida del SDR (preferiblemente DESPUÉS
+                  de la adaptación radio_rate -> bb_rate).
+      Salida 0  : la misma señal I/Q con AWGN adicional controlado.
+      Salida 1  : valor instantáneo de Eb/N0 [dB] usado en el barrido.
+
+      El bloque NO sustituye el USRP/HackRF ni el receptor. Se inserta entre
+      la salida I/Q del SDR y la entrada del receptor digital.
+
+      El barrido se hace por segmentos contiguos. Cada punto se mantiene durante:
+          bits_guardia + bits_por_punto
+
+      La potencia de ruido artificial se calcula a partir de la potencia promedio
+      medida ANTES de agregar el ruido:
+
+          Eb = Ps / Rb
+          N0 = Eb / (Eb/N0)
+          Pn = N0 * Fs
+
+      por lo tanto:
+
+          Pn = Ps * Fs / (Rb * 10**(EbN0_dB/10))
+
+      El ruido complejo se genera con varianza total Pn.
+      """
+
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.sync_block):
+          def __init__(self,
+                       EbN0_min=0.0,
+                       EbN0_max=14.0,
+                       EbN0_step=1.0,
+                       samp_rate=256000.0,
+                       bit_rate=64000.0,
+                       bits_por_punto=100000,
+                       bits_guardia=1000,
+                       signal_power=0.0,
+                       seed=2026):
+              gr.sync_block.__init__(
+                  self,
+                  name='e_EbN0_Sweep',
+                  in_sig=[np.complex64],
+                  out_sig=[np.complex64, np.float32]
+              )
+
+              self.EbN0_min = float(EbN0_min)
+              self.EbN0_max = float(EbN0_max)
+              self.EbN0_step = float(EbN0_step)
+              self.samp_rate = float(samp_rate)
+              self.bit_rate = float(bit_rate)
+              self.bits_por_punto = max(1, int(bits_por_punto))
+              self.bits_guardia = max(0, int(bits_guardia))
+              self.signal_power_cfg = float(signal_power)
+
+              if self.EbN0_step <= 0:
+                  raise ValueError("EbN0_step debe ser > 0")
+              if self.samp_rate <= 0 or self.bit_rate <= 0:
+                  raise ValueError("samp_rate y bit_rate deben ser > 0")
+              if self.EbN0_max < self.EbN0_min:
+                  raise ValueError("EbN0_max debe ser >= EbN0_min")
+
+              npts = int(round((self.EbN0_max-self.EbN0_min)/self.EbN0_step)) + 1
+              self.eb_axis = self.EbN0_min + self.EbN0_step*np.arange(npts, dtype=np.float64)
+              self.segment_bits = self.bits_guardia + self.bits_por_punto
+
+              self.sample_count = 0
+              self.power_sum = 0.0
+              self.power_count = 0
+              self.rng = np.random.default_rng(int(seed))
+
+          def _signal_power(self, x):
+              if self.signal_power_cfg > 0:
+                  return self.signal_power_cfg
+
+              # Promedio acumulado de la señal recibida ANTES del ruido artificial.
+              self.power_sum += float(np.sum(np.abs(x.astype(np.complex128))**2))
+              self.power_count += len(x)
+              if self.power_count <= 0:
+                  return 0.0
+              return max(self.power_sum/self.power_count, 1e-20)
+
+          def work(self, input_items, output_items):
+              x = input_items[0]
+              y = output_items[0]
+              eb_out = output_items[1]
+              n = len(x)
+              if n == 0:
+                  return 0
+
+              Ps = self._signal_power(x)
+
+              # Índice absoluto de muestra -> índice equivalente de bit.
+              s = self.sample_count + np.arange(n, dtype=np.float64)
+              bit_index = np.floor(s*self.bit_rate/self.samp_rate).astype(np.int64)
+
+              segment_index = bit_index // self.segment_bits
+              point_index = np.mod(segment_index, len(self.eb_axis))
+              ebn0_db = self.eb_axis[point_index]
+              ebn0_lin = np.power(10.0, ebn0_db/10.0)
+
+              # Potencia total del ruido complejo por muestra.
+              noise_power = Ps*self.samp_rate/(self.bit_rate*ebn0_lin)
+              sigma_iq = np.sqrt(np.maximum(noise_power, 0.0)/2.0)
+
+              noise = (
+                  self.rng.standard_normal(n)*sigma_iq
+                  + 1j*self.rng.standard_normal(n)*sigma_iq
+              ).astype(np.complex64)
+
+              y[:] = x + noise
+              eb_out[:] = ebn0_db.astype(np.float32)
+
+              self.sample_count += n
+              return n
+    samp_rate: bb_rate
+    bit_rate: Rb
+    signal_power: '0.0'
+    seed: '2026'
+    affinity: ''
+    alias: ''
+    comment: 'AWGN controlado: entre la salida I/Q (a bb_rate) y el receptor digital'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    EbN0_min: EbN0_min
+    EbN0_max: EbN0_max
+    EbN0_step: EbN0_step
+    bits_por_punto: bits_por_punto
+    bits_guardia: bits_guardia
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 0
+    - 700
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: curva_teorica_ber
+  id: variable
+  parameters:
+    value: '[math.log10(max((3.0/8.0)*math.erfc(math.sqrt(0.4*10**((EbN0_min+EbN0_step*i)/10.0))), 1e-12)) for i in range(N_EbN0)]'
+    comment: '16-QAM Gray en AWGN: Pb = 3/8 erfc(sqrt(0.4 Eb/N0))'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1280
+    rotation: 0
+    state: enabled
+- name: e_Alinea_Ref
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      e_Alinea_Ref  -  Alineacion automatica de las secuencias Tx y Rx (Guia 4, paso 9)
+
+      El transmisor (otro computador) repite una trama conocida de 8192 bits = 2048 simbolos 16-QAM.
+      Este bloque regenera esa misma trama en el receptor (parametro 'referencia') y la alinea con
+      los simbolos decididos por el receptor, de modo que e_BER_Curve compare bit a bit las dos
+      secuencias con delay_bits = 0.
+
+      Entrada 0 : indice de simbolo decidido (0..15) a la salida del Constellation Receiver.
+      Salida 0  : simbolo recibido ya corregido de la ambiguedad de fase (0/90/180/270 grados).
+      Salida 1  : simbolo de referencia (Tx) alineado con el anterior.
+      Salida 2  : desfase encontrado (simbolos, 0..2047)  -> equivale al delay_bits = 4*desfase.
+      Salida 3  : rotacion aplicada (0..3).
+      Salida 4  : fraccion de simbolos coincidentes en la ultima ventana (0..1).
+
+      Funcionamiento (SIN latencia anadida: cada simbolo sale en cuanto entra, con el desfase y la rotacion que dieron
+      las ventanas anteriores):
+        1. Busqueda: correlacion circular (FFT) de la ventana recibida con la trama de referencia,
+           para los 2048 desfases y las 4 rotaciones. Se acepta si coincide >= 30 % de los simbolos
+           (el azar da 6,25 %).
+        2. Seguimiento: el desfase queda fijo; cada 256 simbolos se reevalua la rotacion (el lazo de
+           portadora puede saltar 90 grados cuando el ruido es alto); se cambia solo si otra rotacion
+           coincide >= 25 % mas que la actual.
+        3. Si 8 ventanas de seguimiento (2048 simbolos) coinciden menos de 25 %, se vuelve a buscar (salto de simbolo).
+           La busqueda solo cambia el enganche si encuentra >= 30 % de coincidencia; en un enlace con mucho ruido
+           (BER ~ 0,4) el enganche se conserva y los errores se cuentan.
+      Antes del primer enganche las dos salidas son iguales (no se cuentan errores falsos).
+      Despues del enganche NUNCA se fuerza la referencia: si el enlace pierde el sincronismo, los
+      errores resultantes se cuentan como errores reales.
+      """
+      import numpy as np
+      from gnuradio import gr
+
+      W = 2048          # una trama = 2048 simbolos (periodo de la referencia)
+      TRK = 256         # ventana de seguimiento de la rotacion
+      NPOBRES = 8       # ventanas de seguimiento pobres (acumuladas) antes de volver a buscar (2048 simbolos)
+      TABLA = np.array([-3-3j, -3-1j, -3+3j, -3+1j, -1-3j, -1-1j, -1+3j, -1+1j,
+                        3-3j, 3-1j, 3+3j, 3+1j, 1-3j, 1-1j, 1+3j, 1+1j]) / np.sqrt(10)
+
+
+      def _mapa(k):
+          q = TABLA * (1j ** k)
+          return np.array([np.argmin(np.abs(TABLA - v)) for v in q], dtype=np.uint8)
+
+
+      class blk(gr.sync_block):
+          def __init__(self, referencia=None, umbral_enganche=0.30, umbral_pobre=0.25):
+              gr.sync_block.__init__(self, name='e_Alinea_Ref', in_sig=[np.uint8],
+                                     out_sig=[np.uint8, np.uint8, np.float32, np.float32, np.float32])
+              if referencia is None:
+                  referencia = [0] * 1024      # solo para que GRC pueda leer la firma del bloque
+              bits = np.unpackbits(np.array(referencia, dtype=np.uint8))
+              assert len(bits) == 4 * W, 'la referencia debe tener 8192 bits (1024 bytes)'
+              self.REF = (bits.reshape(-1, 4) * np.array([8, 4, 2, 1])).sum(1).astype(np.uint8)
+              self.MAPAS = [_mapa(k) for k in range(4)]
+              self.umbral_enganche = float(umbral_enganche)
+              self.umbral_pobre = float(umbral_pobre)
+              v = np.arange(16, dtype=np.uint8)[:, None]
+              self.FB = np.fft.fft((self.REF[None, :] == v).astype(np.float64), axis=1)
+              self.V = v
+              self.enganchado = False
+              self.s = 0
+              self.r = 0
+              self.match = 0.0
+              self.pobres = 0
+              self.buf = np.zeros(0, dtype=np.uint8)
+              self.trk = np.zeros(0, dtype=np.uint8)
+              self.n_trk = 0
+              self.p = 0                                      # indice absoluto de simbolo
+
+          def _buscar(self, x):
+              mejor = (-1.0, 0, 0)
+              for k in range(4):
+                  y = self.MAPAS[k][x]
+                  FA = np.fft.fft((y[None, :] == self.V).astype(np.float64), axis=1)
+                  c = np.fft.ifft(np.conj(FA) * self.FB, axis=1).real.sum(axis=0)
+                  s = int(np.argmax(c))
+                  if c[s] > mejor[0]:
+                      mejor = (float(c[s]), s, k)
+              return mejor[0] / W, mejor[1], mejor[2]
+
+          def _ref_en(self, q0, n):
+              """Simbolos de referencia para los indices absolutos q0..q0+n-1."""
+              return self.REF[(q0 + np.arange(n) + self.s) % W]
+
+          def _buscar_buffer(self):
+              """Busqueda global sobre los ultimos W simbolos recibidos."""
+              x = self.buf
+              m, s, k = self._buscar(x)
+              if m >= self.umbral_enganche:
+                  inicio = self.p - W                       # indice absoluto del primer simbolo del buffer
+                  return m, (s - inicio) % W, k
+              return m, None, None
+
+          def _seguimiento(self, x):
+              """x: ultimos TRK simbolos (ya incluidos en el buffer). Actualiza rotacion / reenganche."""
+              q0 = self.p - len(x)
+              ref = self._ref_en(q0, len(x))
+              coin = [float((self.MAPAS[k][x] == ref).mean()) for k in range(4)]
+              mejor = int(np.argmax(coin))
+              if coin[mejor] > coin[self.r] + 0.25:
+                  self.r = mejor
+              self.match = coin[self.r]
+              if self.match < self.umbral_pobre:
+                  self.pobres += 1
+              else:
+                  self.pobres = max(0, self.pobres - 2)
+
+          def work(self, input_items, output_items):
+              n = len(input_items[0])
+              x = input_items[0] & 0x0F
+              a = 0
+              while a < n:
+                  b = min(n, a + TRK - len(self.trk))
+                  seg = x[a:b]
+                  if self.enganchado:
+                      output_items[0][a:b] = self.MAPAS[self.r][seg]
+                      output_items[1][a:b] = self._ref_en(self.p, len(seg))
+                  else:                                       # antes del primer enganche: sin errores falsos
+                      output_items[0][a:b] = seg
+                      output_items[1][a:b] = seg
+                  self.p += len(seg)
+                  self.buf = np.concatenate([self.buf, seg])[-W:]
+                  self.trk = np.concatenate([self.trk, seg])
+                  if len(self.trk) == TRK:
+                      if self.enganchado:
+                          self._seguimiento(self.trk)
+                      self.trk = np.zeros(0, dtype=np.uint8)
+                      self.n_trk += 1
+                      if len(self.buf) == W and self.n_trk % (W // TRK) == 0 and \
+                              (not self.enganchado or self.pobres >= NPOBRES):
+                          m, s_abs, k = self._buscar_buffer()
+                          if s_abs is not None:
+                              self.enganchado, self.s, self.r, self.match, self.pobres = True, s_abs, k, m, 0
+                          elif not self.enganchado:
+                              self.match = 0.0
+                  a = b
+              output_items[2][:] = self.s
+              output_items[3][:] = self.r
+              output_items[4][:] = self.match
+              return n
+    referencia: lab.trama_bytes(mensaje_ref)
+    umbral_enganche: '0.30'
+    umbral_pobre: '0.25'
+    affinity: ''
+    alias: ''
+    comment: Regenera la trama Tx conocida y la alinea con los simbolos recibidos (corrige desfase y ambiguedad de 90 grados)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 900
+    - 1450
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: e_SER_Curve
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      e_SER_Curve - Acumulador de curva SER (tasa de error de SIMBOLO) 16-QAM.
+      Adaptacion de e_BER_Curve: compara simbolos (0..15) en lugar de bits.
+
+      Entrada 0 : simbolo Tx de referencia (0..15), salida 1 de e_Alinea_Ref.
+      Entrada 1 : simbolo decidido por el receptor (0..15), salida 0 de e_Alinea_Ref.
+
+      Salida 0  : vector SER lineal.
+      Salida 1  : vector log10(SER) para QT GUI Vector Sink.
+
+      El bloque usa exactamente el mismo barrido que e_EbN0_Sweep. Para cada punto:
+      - ignora simbolos_guardia al comienzo del segmento;
+      - compara simbolos_por_punto;
+      - cuando el barrido vuelve a un punto, sigue acumulando estadísticas.
+
+      delay_bits retrasa internamente la referencia Tx para compensar el retardo
+      del receptor. Se ajusta primero en una condición limpia hasta lograr BER≈0.
+
+      Cuando todavía no se observa ningún error, la salida logarítmica utiliza
+      3/N como cota superior aproximada para poder mostrar el punto sin afirmar
+      que BER=0.
+      """
+
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.decim_block):
+          def __init__(self,
+                       EbN0_min=0.0,
+                       EbN0_max=14.0,
+                       EbN0_step=1.0,
+                       simbolos_por_punto=25000,
+                       simbolos_guardia=5000,
+                       delay_simbolos=0,
+                       update_every=1000):
+              self.EbN0_min = float(EbN0_min)
+              self.EbN0_max = float(EbN0_max)
+              self.EbN0_step = float(EbN0_step)
+              self.simbolos_por_punto = max(1, int(simbolos_por_punto))
+              self.simbolos_guardia = max(0, int(simbolos_guardia))
+              self.delay_simbolos = max(0, int(delay_simbolos))
+              self.update_every = max(1, int(update_every))
+
+              if self.EbN0_step <= 0:
+                  raise ValueError("EbN0_step debe ser > 0")
+              if self.EbN0_max < self.EbN0_min:
+                  raise ValueError("EbN0_max debe ser >= EbN0_min")
+
+              npts = int(round((self.EbN0_max-self.EbN0_min)/self.EbN0_step)) + 1
+              self.eb_axis = self.EbN0_min + self.EbN0_step*np.arange(npts, dtype=np.float64)
+              self.N = len(self.eb_axis)
+              self.segment_bits = self.simbolos_guardia + self.simbolos_por_punto
+
+              gr.decim_block.__init__(
+                  self,
+                  name='e_SER_Curve',
+                  in_sig=[np.uint8, np.uint8],
+                  out_sig=[(np.float32, self.N), (np.float32, self.N)],
+                  decim=self.update_every
+              )
+
+              self.carry = np.zeros(self.delay_simbolos, dtype=np.uint8)
+              self.raw_items = 0
+              self.valid_bit_index = 0
+
+              self.count = np.zeros(self.N, dtype=np.int64)
+              self.errors = np.zeros(self.N, dtype=np.int64)
+
+          def _process(self, tx, rx):
+              # Un simbolo es erroneo si el indice decidido difiere del transmitido.
+              tb = (np.asarray(tx, dtype=np.int64) & 15).astype(np.uint8)
+              rb = (np.asarray(rx, dtype=np.int64) & 15).astype(np.uint8)
+              n = len(tb)
+              if self.delay_simbolos > 0:
+                  lleno = np.concatenate([self.carry, tb])
+                  ta = lleno[:n]
+                  self.carry = lleno[n:]
+                  salto = min(n, max(0, self.delay_simbolos - self.raw_items))
+                  ta, rb = ta[salto:], rb[salto:]
+              else:
+                  ta = tb
+              self.raw_items += n
+              m = len(ta)
+              if m == 0:
+                  return
+              idx = self.valid_bit_index + np.arange(m, dtype=np.int64)
+              punto = (idx // self.segment_bits) % self.N
+              pos = idx % self.segment_bits
+              ok = pos >= self.simbolos_guardia
+              self.count += np.bincount(punto[ok], minlength=self.N)
+              self.errors += np.bincount(punto[ok & (ta != rb)], minlength=self.N)
+              self.valid_bit_index += m
+
+          def _vectors(self):
+              ser = np.zeros(self.N, dtype=np.float32)
+              logser = np.zeros(self.N, dtype=np.float32)
+
+              for i in range(self.N):
+                  n = int(self.count[i])
+                  e = int(self.errors[i])
+
+                  if n <= 0:
+                      ser[i] = 0.0
+                      logser[i] = 0.0
+                  elif e > 0:
+                      b = e/float(n)
+                      ser[i] = b
+                      logser[i] = np.log10(max(b, 1e-12))
+                  else:
+                      # SER observado = 0; para la gráfica usamos una cota superior.
+                      ser[i] = 0.0
+                      upper = min(1.0, 3.0/float(n))
+                      logser[i] = np.log10(max(upper, 1e-12))
+
+              return ser, logser
+
+          def work(self, input_items, output_items):
+              tx = input_items[0]
+              rx = input_items[1]
+              out_ber = output_items[0]
+              out_log = output_items[1]
+
+              nout = len(out_ber)
+              D = self.update_every
+
+              for k in range(nout):
+                  a = k*D
+                  b = min((k+1)*D, len(tx))
+                  if a < b:
+                      self._process(tx[a:b], rx[a:b])
+
+                  ser, logser = self._vectors()
+                  out_ber[k, :] = ser
+                  out_log[k, :] = logser
+
+              return nout
+    delay_simbolos: delay_simbolos
+    update_every: update_every
+    affinity: ''
+    alias: ''
+    comment: Compara simbolos Tx/Rx y acumula SER por punto
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    EbN0_min: EbN0_min
+    EbN0_max: EbN0_max
+    EbN0_step: EbN0_step
+    simbolos_por_punto: simbolos_por_punto
+    simbolos_guardia: simbolos_guardia
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1460
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: bits_rx
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    k: '4'
+    comment: Bits Rx (0/1) tras decision y demapeo
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 1510
+    rotation: 0
+    state: enabled
+- name: bits_tx_ref
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    k: '4'
+    comment: Bits Tx de referencia (0/1)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 1430
+    rotation: 0
+    state: enabled
+- name: e_BER_Curve
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      e_BER_Curve (version rapida, mismo comportamiento que el archivo suministrado)
+      Acumulador de curva BER para los sistemas de los estudiantes.
+
+      Entrada 0 : bits transmitidos de referencia (byte 0/1).
+      Entrada 1 : bits recuperados por el receptor (byte 0/1).
+
+      Salida 0  : vector BER lineal.
+      Salida 1  : vector log10(BER) para QT GUI Vector Sink.
+
+      El bloque usa exactamente el mismo barrido que e_EbN0_Sweep. Para cada punto:
+      - ignora bits_guardia al comienzo del segmento;
+      - compara bits_por_punto;
+      - cuando el barrido vuelve a un punto, sigue acumulando estadísticas.
+
+      delay_bits retrasa internamente la referencia Tx para compensar el retardo
+      del receptor. Se ajusta primero en una condición limpia hasta lograr BER≈0.
+
+      Cuando todavía no se observa ningún error, la salida logarítmica utiliza
+      3/N como cota superior aproximada para poder mostrar el punto sin afirmar
+      que BER=0.
+      """
+
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.decim_block):
+          def __init__(self,
+                       EbN0_min=0.0,
+                       EbN0_max=14.0,
+                       EbN0_step=1.0,
+                       bits_por_punto=100000,
+                       bits_guardia=1000,
+                       delay_bits=0,
+                       update_every=1000):
+              self.EbN0_min = float(EbN0_min)
+              self.EbN0_max = float(EbN0_max)
+              self.EbN0_step = float(EbN0_step)
+              self.bits_por_punto = max(1, int(bits_por_punto))
+              self.bits_guardia = max(0, int(bits_guardia))
+              self.delay_bits = max(0, int(delay_bits))
+              self.update_every = max(1, int(update_every))
+
+              if self.EbN0_step <= 0:
+                  raise ValueError("EbN0_step debe ser > 0")
+              if self.EbN0_max < self.EbN0_min:
+                  raise ValueError("EbN0_max debe ser >= EbN0_min")
+
+              npts = int(round((self.EbN0_max-self.EbN0_min)/self.EbN0_step)) + 1
+              self.eb_axis = self.EbN0_min + self.EbN0_step*np.arange(npts, dtype=np.float64)
+              self.N = len(self.eb_axis)
+              self.segment_bits = self.bits_guardia + self.bits_por_punto
+
+              gr.decim_block.__init__(
+                  self,
+                  name='e_BER_Curve',
+                  in_sig=[np.int8, np.int8],
+                  out_sig=[(np.float32, self.N), (np.float32, self.N)],
+                  decim=self.update_every
+              )
+
+              self.carry = np.zeros(self.delay_bits, dtype=np.uint8)
+              self.raw_items = 0
+              self.valid_bit_index = 0
+
+              self.count = np.zeros(self.N, dtype=np.int64)
+              self.errors = np.zeros(self.N, dtype=np.int64)
+
+          def _process(self, tx, rx):
+              # Version vectorizada de la original (mismo resultado, ~100x mas rapida):
+              # el bucle bit a bit en Python no alcanza para Rb = 2,5 Mb/s en tiempo real.
+              tb = (np.asarray(tx, dtype=np.int64) & 1).astype(np.uint8)
+              rb = (np.asarray(rx, dtype=np.int64) & 1).astype(np.uint8)
+              n = len(tb)
+              if self.delay_bits > 0:
+                  lleno = np.concatenate([self.carry, tb])
+                  ta = lleno[:n]
+                  self.carry = lleno[n:]
+                  salto = min(n, max(0, self.delay_bits - self.raw_items))
+                  ta, rb = ta[salto:], rb[salto:]
+              else:
+                  ta = tb
+              self.raw_items += n
+              m = len(ta)
+              if m == 0:
+                  return
+              idx = self.valid_bit_index + np.arange(m, dtype=np.int64)
+              punto = (idx // self.segment_bits) % self.N
+              pos = idx % self.segment_bits
+              ok = pos >= self.bits_guardia
+              self.count += np.bincount(punto[ok], minlength=self.N)
+              self.errors += np.bincount(punto[ok & (ta != rb)], minlength=self.N)
+              self.valid_bit_index += m
+
+          def _vectors(self):
+              ber = np.zeros(self.N, dtype=np.float32)
+              logber = np.zeros(self.N, dtype=np.float32)
+
+              for i in range(self.N):
+                  n = int(self.count[i])
+                  e = int(self.errors[i])
+
+                  if n <= 0:
+                      ber[i] = 0.0
+                      logber[i] = 0.0
+                  elif e > 0:
+                      b = e/float(n)
+                      ber[i] = b
+                      logber[i] = np.log10(max(b, 1e-12))
+                  else:
+                      # BER observado = 0; para la gráfica usamos una cota superior.
+                      ber[i] = 0.0
+                      upper = min(1.0, 3.0/float(n))
+                      logber[i] = np.log10(max(upper, 1e-12))
+
+              return ber, logber
+
+          def work(self, input_items, output_items):
+              tx = input_items[0]
+              rx = input_items[1]
+              out_ber = output_items[0]
+              out_log = output_items[1]
+
+              nout = len(out_ber)
+              D = self.update_every
+
+              for k in range(nout):
+                  a = k*D
+                  b = min((k+1)*D, len(tx))
+                  if a < b:
+                      self._process(tx[a:b], rx[a:b])
+
+                  ber, logber = self._vectors()
+                  out_ber[k, :] = ber
+                  out_log[k, :] = logber
+
+              return nout
+    delay_bits: delay_bits
+    update_every: update_every
+    affinity: ''
+    alias: ''
+    comment: Compara bits Tx/Rx y acumula BER por punto
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    EbN0_min: EbN0_min
+    EbN0_max: EbN0_max
+    EbN0_step: EbN0_step
+    bits_por_punto: bits_por_punto
+    bits_guardia: bits_guardia
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1850
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: clean_dec
+  id: blocks_keep_one_in_n
+  parameters:
+    type: complex
+    n: bps
+    vlen: '1'
+    comment: I/Q limpia (antes de e_EbN0_Sweep) a tasa de simbolo
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 440
+    rotation: 0
+    state: enabled
+- name: noisy_dec
+  id: blocks_keep_one_in_n
+  parameters:
+    type: complex
+    n: bps
+    vlen: '1'
+    comment: I/Q con ruido (salida de e_EbN0_Sweep) a tasa de simbolo
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 510
+    rotation: 0
+    state: enabled
+- name: ebn0_dec
+  id: blocks_keep_one_in_n
+  parameters:
+    type: float
+    n: bps
+    vlen: '1'
+    comment: Eb/N0 actual a tasa de simbolo
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 640
+    rotation: 0
+    state: enabled
+- name: e_Metricas_Sistema_CSV
+  id: epy_block
+  parameters:
+    _source_code: |
+      """
+      e_Metricas_Sistema_CSV  -  metricas del enlace por punto del barrido de Eb/N0 (Guia 4A), grupo A1-GI.
+
+      Implementacion propia con las mismas columnas del CSV de la guia. Todas las entradas llegan A LA TASA DE SIMBOLO
+      (en el flujograma, las dos I/Q pasan por un Keep 1 in N con N = bits_por_simbolo; asi ninguna entrada
+      tiene tasa distinta y no se detiene el flujograma):
+
+        0  I/Q limpia (antes de e_EbN0_Sweep, decimada 1 de cada N)
+        1  I/Q con ruido (salida de e_EbN0_Sweep, decimada 1 de cada N)
+        2  indice de simbolo Tx (0..15)   -> salida 1 de e_Alinea_Ref
+        3  indice de simbolo Rx (0..15)   -> salida 0 de e_Alinea_Ref
+        4  Eb/N0 actual (salida naranja de e_EbN0_Sweep, decimada 1 de cada N)
+
+      BER: cada indice de simbolo son exactamente sus bps bits (MSB primero), por lo que los bits erroneos
+      son popcount(tx XOR rx): resultado identico a comparar los bits desempaquetados. Por eso no hay entradas de bits
+      (a tasa de bit distinta de la de simbolo detendrian el flujograma); la guia pide bits Tx/Rx, que aqui entran
+      ya agrupados como indice de simbolo.
+
+      Cada fila se escribe al completar una ventana (bits_guardia + bits_per_record bits, convertida a simbolos),
+      la misma ventana que usan e_BER_Curve / e_SER_Curve, por lo que una fila = un unico punto Eb/N0.
+
+      Columnas: modulation_type, bits_per_symbol_m, samp_rate_hz, symbol_rate_rs_baud, bandwidth_bw_hz,
+      amplitude_a_v, ebn0_db (nivel del barrido al que pertenece la ventana), noise_variance_sigma2 (potencia de y-x, I/Q, medida en ese nivel),
+      measured_snr_db (10log10 P_limpia / sigma2), measured_ber, measured_ser,
+      iq_dispersion_rms (sqrt(mean|y-x|^2 / mean|x|^2): dispersion rms normalizada de la I/Q con ruido).
+      """
+      import csv
+      import numpy as np
+      from pathlib import Path
+      from gnuradio import gr
+
+      POP = np.array([bin(i).count('1') for i in range(16)], dtype=np.int64)
+      COLS = ['modulation_type', 'bits_per_symbol_m', 'samp_rate_hz', 'symbol_rate_rs_baud', 'bandwidth_bw_hz',
+              'amplitude_a_v', 'ebn0_db', 'noise_variance_sigma2', 'measured_snr_db', 'measured_ber',
+              'measured_ser', 'iq_dispersion_rms']
+
+
+      class blk(gr.sync_block):
+          def __init__(self, modulation_type='16QAM', bits_per_symbol_m=4, samp_rate_hz=2.5e6,
+                       symbol_rate_rs_baud=625e3, bandwidth_bw_hz=844e3, amplitude_a_v=1.0,
+                       bits_per_record=100000, bits_guardia=20000, delay_bits=0, delay_symbols=0,
+                       EbN0_min=0.0, EbN0_max=14.0, EbN0_step=1.0,
+                       csv_filename='metricas_sistema_GrupoA1-GI.csv', overwrite_on_start=True):
+              gr.sync_block.__init__(self, name='e_Metricas_Sistema_CSV',
+                                     in_sig=[np.complex64, np.complex64, np.uint8, np.uint8, np.float32],
+                                     out_sig=None)
+              self.mod = str(modulation_type)
+              self.m = max(1, int(bits_per_symbol_m))
+              self.fs = float(samp_rate_hz); self.rs = float(symbol_rate_rs_baud)
+              self.bw = float(bandwidth_bw_hz); self.amp = float(amplitude_a_v)
+              self.guard = max(0, int(bits_guardia)) // self.m
+              self.rec = max(1, int(bits_per_record)) // self.m
+              self.seg = self.guard + self.rec
+              self.ret = max(0, int(delay_symbols))
+              self.n = int(round((float(EbN0_max) - float(EbN0_min)) / float(EbN0_step))) + 1
+              self.eb0, self.step = float(EbN0_min), float(EbN0_step)
+              base = Path(__file__).resolve().parent if '__file__' in globals() else Path.cwd()
+              self.ruta = base / str(csv_filename)
+              if overwrite_on_start or not self.ruta.exists():
+                  with open(self.ruta, 'w', newline='', encoding='utf-8') as f:
+                      csv.writer(f).writerow(COLS)
+              self.k = 0                      # simbolos procesados (entrada 3)
+              self.bx = np.zeros(self.n); self.bd = np.zeros(self.n); self.bn = np.zeros(self.n, dtype=np.int64)
+              self._desde = 0
+              self._reset()
+              self._tx_hist = np.zeros(self.ret, dtype=np.uint8)
+              print('CSV de metricas:', self.ruta, flush=True)
+
+          def _reset(self):
+              self.errb = 0; self.errs = 0; self.nsym = 0
+
+          def _flush(self):
+              p = (self.k // self.seg - 1) % self.n            # punto del barrido al que pertenece la ventana
+              n = max(self.nsym, 1)
+              c = max(self.bn[p], 1)
+              px = self.bx[p] / c; s2 = self.bd[p] / c
+              self.bx[p] = self.bd[p] = 0.0; self.bn[p] = 0
+              snr = 10 * np.log10(px / s2) if s2 > 0 and px > 0 else float('nan')
+              disp = float(np.sqrt(s2 / px)) if px > 0 else float('nan')
+              fila = [self.mod, self.m, self.fs, self.rs, self.bw, self.amp, '%.3f' % (self.eb0 + self.step * p), '%.6e' % s2, '%.3f' % snr,
+                      '%.6e' % (self.errb / (n * self.m)), '%.6e' % (self.errs / n), '%.6f' % disp]
+              with open(self.ruta, 'a', newline='', encoding='utf-8') as f:
+                  csv.writer(f).writerow(fila)
+              self._reset()
+
+          def _estadisticas_iq(self, x, y, eb):
+              """Acumula potencia limpia y de ruido (y-x) en el contenedor de su nivel de Eb/N0, ignorando los
+              primeros bits_guardia/m simbolos tras cada cambio de nivel (las I/Q no llevan el retardo del receptor)."""
+              N = len(x)
+              cam = np.flatnonzero(np.diff(eb) != 0.0) + 1
+              ult = np.zeros(N, dtype=np.int64); ult[cam] = cam
+              ult = np.maximum.accumulate(ult)
+              desde = np.where(ult > 0, np.arange(N) - ult, self._desde + np.arange(N))
+              self._desde = int(desde[-1]) + 1
+              ok = desde >= self.guard
+              b = np.rint((eb - self.eb0) / self.step).astype(np.int64)
+              ok &= (b >= 0) & (b < self.n) & (np.abs(eb - (self.eb0 + b * self.step)) < 1e-3)
+              if not ok.any():
+                  return
+              xx = x[ok].astype(np.complex128); d = y[ok].astype(np.complex128) - xx; bb = b[ok]
+              self.bx += np.bincount(bb, weights=np.abs(xx) ** 2, minlength=self.n)
+              self.bd += np.bincount(bb, weights=np.abs(d) ** 2, minlength=self.n)
+              self.bn += np.bincount(bb, minlength=self.n)
+
+          def work(self, input_items, output_items):
+              x, y, tx, rx, eb = input_items
+              N = len(x)
+              tx = tx & 15; rx = rx & 15
+              if self.ret:     # retardo opcional de la referencia Tx
+                  full = np.concatenate([self._tx_hist, tx]); tx = full[:N]; self._tx_hist = full[N:]
+              self._estadisticas_iq(x, y, eb)
+              i = 0
+              while i < N:
+                  pos = self.k % self.seg
+                  tomar = min(N - i, self.seg - pos)
+                  if pos < self.guard:
+                      tomar = min(tomar, self.guard - pos)
+                  else:
+                      sl = slice(i, i + tomar)
+                      diff = tx[sl] ^ rx[sl]
+                      self.errb += int(POP[diff].sum()); self.errs += int(np.count_nonzero(diff)); self.nsym += tomar
+                  self.k += tomar; i += tomar
+                  if self.k % self.seg == 0:
+                      self._flush()
+              return N
+    modulation_type: modulation_type
+    bits_per_symbol_m: bps
+    samp_rate_hz: bb_rate
+    symbol_rate_rs_baud: Rs
+    bandwidth_bw_hz: bandwidth_bw_hz
+    amplitude_a_v: amplitude_a_v
+    bits_per_record: bits_per_record
+    bits_guardia: bits_guardia
+    delay_bits: delay_bits
+    delay_symbols: delay_simbolos
+    EbN0_min: EbN0_min
+    EbN0_max: EbN0_max
+    EbN0_step: EbN0_step
+    csv_filename: '"metricas_sistema_GrupoA1-GI.csv"'
+    overwrite_on_start: 'True'
+    affinity: ''
+    alias: ''
+    comment: CSV de metricas por punto del barrido (BER, SER, SNR medida, dispersion I/Q)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1800
+    - 1650
+    rotation: 0
+    state: enabled
+    _io_cache: ''
+- name: curva_ber
+  id: qtgui_vector_sink_f
+  parameters:
+    name: '"Curva BER vs Eb/N0"'
+    vlen: N_EbN0
+    x_start: EbN0_min
+    x_step: EbN0_step
+    x_axis_label: '"Eb/N0 [dB]"'
+    y_axis_label: '"log10(BER)"'
+    x_units: '"dB"'
+    y_units: '""'
+    ref_level: '0'
+    ymin: '-7'
+    ymax: '0'
+    update_time: '0.2'
+    grid: 'True'
+    legend: 'True'
+    autoscale: 'False'
+    average: '1.0'
+    nconnections: '2'
+    showports: 'False'
+    gui_hint: 14,0,5,3
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    label1: '"BER medida"'
+    label2: '"Teoria BER 16-QAM"'
+    width1: '3'
+    width2: '2'
+    color1: '"blue"'
+    color2: '"red"'
+    alpha1: '1.0'
+    alpha2: '1.0'
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    label10: ''
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    width10: '1'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    alpha10: '1.0'
+    color3: '"green"'
+    color4: '"green"'
+    color5: '"green"'
+    color6: '"green"'
+    color7: '"green"'
+    color8: '"green"'
+    color9: '"green"'
+    color10: '"green"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1800
+    - 1850
+    rotation: 0
+    state: enabled
+- name: nulo_ser
+  id: blocks_null_sink
+  parameters:
+    type: float
+    num_inputs: '1'
+    vlen: N_EbN0
+    bus_structure_sink: '[[0,],]'
+    comment: SER lineal (no se grafica)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1800
+    - 1570
+    rotation: 0
+    state: enabled
+- name: nulo_ber
+  id: blocks_null_sink
+  parameters:
+    type: float
+    num_inputs: '1'
+    vlen: N_EbN0
+    bus_structure_sink: '[[0,],]'
+    comment: BER lineal (no se grafica)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1800
+    - 2070
+    rotation: 0
+    state: enabled
+- name: teoria_ber_src
+  id: blocks_vector_source_x
+  parameters:
+    type: float
+    vector: curva_teorica_ber
+    repeat: 'True'
+    tags: '[]'
+    vlen: N_EbN0
+    comment: Sin Throttle
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1950
+    rotation: 0
+    state: enabled
+- name: curva_ser
+  id: qtgui_vector_sink_f
+  parameters:
+    name: '"Curva SER experimental vs Eb/N0"'
+    vlen: N_EbN0
+    x_start: EbN0_min
+    x_step: EbN0_step
+    x_axis_label: '"Eb/N0 [dB]"'
+    y_axis_label: '"log10(SER)"'
+    x_units: '"dB"'
+    y_units: '""'
+    ref_level: '0'
+    ymin: '-7'
+    ymax: '0'
+    update_time: '0.2'
+    grid: 'True'
+    legend: 'True'
+    autoscale: 'False'
+    average: '1.0'
+    nconnections: '2'
+    showports: 'False'
+    gui_hint: 8,0,5,3
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    label10: ''
+    alpha1: '1.0'
+    alpha2: '1.0'
+    color1: '"blue"'
+    color2: '"red"'
+    label1: '"SER medida (simulacion)"'
+    label2: '"Teoria SER 16-QAM en AWGN"'
+    width1: '3'
+    width2: '2'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    width10: '1'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    alpha10: '1.0'
+    color3: '"green"'
+    color4: '"green"'
+    color5: '"green"'
+    color6: '"green"'
+    color7: '"green"'
+    color8: '"green"'
+    color9: '"green"'
+    color10: '"green"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1800
+    - 1410
+    rotation: 0
+    state: enabled
+- name: teoria_src
+  id: blocks_vector_source_x
+  parameters:
+    type: float
+    vector: curva_teorica
+    repeat: 'True'
+    tags: '[]'
+    vlen: N_EbN0
+    comment: 'Sin Throttle: el sumidero lo frena al ritmo de la curva medida'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1500
+    - 1780
+    rotation: 0
+    state: enabled
+- name: estado_alinea
+  id: qtgui_number_sink
+  parameters:
+    name: '"Alineacion Tx/Rx y barrido"'
+    type: float
+    nconnections: '3'
+    min: '-1'
+    max: '2100'
+    label1: Desfase Tx-Rx [simbolos]
+    label2: Rotacion aplicada [x90 grados]
+    label3: Coincidencia de simbolos [0-1]
+    unit1: ''
+    unit2: ''
+    unit3: ''
+    factor1: '1'
+    factor2: '1'
+    factor3: '1'
+    graph_type: qtgui.NUM_GRAPH_NONE
+    avg: '0'
+    update_time: '0.25'
+    autoscale: 'False'
+    gui_hint: 8,3,2,1
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    label10: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 1230
+    - 1650
+    rotation: 0
+    state: enabled
+- name: ebn0_reducido
+  id: blocks_keep_one_in_n
+  parameters:
+    type: float
+    n: int(bb_rate/10)
+    vlen: '1'
+    comment: Reduce el flujo de Eb/N0 a 10 valores/s (evita acoplar tasas distintas en un mismo sumidero)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 580
+    rotation: 0
+    state: enabled
+- name: ebn0_num
+  id: qtgui_number_sink
+  parameters:
+    name: '"Eb/N0 aplicado por e_EbN0_Sweep"'
+    type: float
+    nconnections: '1'
+    min: '-5'
+    max: '40'
+    label1: Eb/N0 actual
+    unit1: dB
+    factor1: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    avg: '0'
+    update_time: '0.1'
+    autoscale: 'False'
+    gui_hint: 13,0,1,3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 520
+    - 580
+    rotation: 0
+    state: enabled
+- name: psd_sweep
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    name: '"Espectro tras e_EbN0_Sweep (entrada del receptor digital)"'
+    fftsize: '2048'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: '0'
+    bw: bb_rate
+    average: '0.2'
+    ymin: '-120'
+    ymax: '0'
+    nconnections: '1'
+    autoscale: 'False'
+    grid: 'True'
+    legend: 'False'
+    units: dB
+    update_time: '0.1'
+    showports: 'False'
+    freqhalf: 'True'
+    ctrlpanel: 'False'
+    norm_window: 'False'
+    gui_hint: 8,4,2,2
+    axislabels: 'True'
+    label1: Senal
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate:
+    - 270
+    - 1030
+    rotation: 0
+    state: enabled
+connections:
+- - fuente_prbs
+  - '0'
+  - bits_to_symbols
+  - '0'
+- - bits_to_symbols
+  - '0'
+  - digital_chunks_to_symbols_xx_0
+  - '0'
+- - digital_chunks_to_symbols_xx_0
+  - '0'
+  - rrc_tx
+  - '0'
+- - rrc_tx
+  - '0'
+  - escala_tx
+  - '0'
+- - escala_tx
+  - '0'
+  - throttle_0
+  - '0'
+- - throttle_0
+  - '0'
+  - canal_radio
+  - '0'
+- - canal_radio
+  - '0'
+  - psd_rx
+  - '0'
+- - rx_portadora
+  - '1'
+  - salidas_libres
+  - '0'
+- - rx_portadora
+  - '2'
+  - salidas_libres
+  - '1'
+- - canal_radio
+  - '0'
+  - e_EbN0_Sweep
+  - '0'
+- - rx_agc_muestras
+  - '0'
+  - rx_sinc_simbolo
+  - '0'
+- - rx_sinc_simbolo
+  - '0'
+  - rx_agc_simbolos
+  - '0'
+- - rx_agc_simbolos
+  - '0'
+  - rx_portadora
+  - '0'
+- - rx_portadora
+  - '0'
+  - ber_prbs
+  - '0'
+- - ber_prbs
+  - '0'
+  - ber_num
+  - '0'
+- - ber_prbs
+  - '1'
+  - ber_num
+  - '1'
+- - ber_prbs
+  - '2'
+  - ber_num
+  - '2'
+- - ber_prbs
+  - '3'
+  - ber_num
+  - '3'
+- - ber_prbs
+  - '2'
+  - probe_ber
+  - '0'
+- - ber_prbs
+  - '0'
+  - probe_ok
+  - '0'
+- - ber_prbs
+  - texto
+  - mensaje_rx
+  - val
+- - rx_portadora
+  - '0'
+  - rx_punto_ideal
+  - '0'
+- - rx_portadora
+  - '4'
+  - evm_error
+  - '0'
+- - rx_punto_ideal
+  - '0'
+  - evm_error
+  - '1'
+- - evm_error
+  - '0'
+  - evm_mag2
+  - '0'
+- - evm_mag2
+  - '0'
+  - evm_promedio
+  - '0'
+- - evm_promedio
+  - '0'
+  - evm_raiz
+  - '0'
+- - evm_raiz
+  - '0'
+  - evm_pct
+  - '0'
+- - rx_portadora
+  - '3'
+  - cfo_promedio
+  - '0'
+- - cfo_promedio
+  - '0'
+  - cfo_hz
+  - '0'
+- - evm_pct
+  - '0'
+  - medidas_num
+  - '0'
+- - cfo_hz
+  - '0'
+  - medidas_num
+  - '1'
+- - evm_pct
+  - '0'
+  - probe_evm
+  - '0'
+- - cfo_hz
+  - '0'
+  - probe_cfo
+  - '0'
+- - rx_agc_simbolos
+  - '0'
+  - const_sinc
+  - '0'
+- - rx_portadora
+  - '4'
+  - const_rx
+  - '0'
+- - e_EbN0_Sweep
+  - '0'
+  - rx_agc_muestras
+  - '0'
+- - e_EbN0_Sweep
+  - '0'
+  - psd_sweep
+  - '0'
+- - rx_portadora
+  - '0'
+  - e_Alinea_Ref
+  - '0'
+- - e_Alinea_Ref
+  - '0'
+  - bits_rx
+  - '0'
+- - e_Alinea_Ref
+  - '1'
+  - bits_tx_ref
+  - '0'
+- - e_Alinea_Ref
+  - '1'
+  - e_SER_Curve
+  - '0'
+- - e_Alinea_Ref
+  - '0'
+  - e_SER_Curve
+  - '1'
+- - bits_tx_ref
+  - '0'
+  - e_BER_Curve
+  - '0'
+- - bits_rx
+  - '0'
+  - e_BER_Curve
+  - '1'
+- - e_BER_Curve
+  - '1'
+  - curva_ber
+  - '0'
+- - teoria_ber_src
+  - '0'
+  - curva_ber
+  - '1'
+- - canal_radio
+  - '0'
+  - clean_dec
+  - '0'
+- - e_EbN0_Sweep
+  - '0'
+  - noisy_dec
+  - '0'
+- - e_EbN0_Sweep
+  - '1'
+  - ebn0_dec
+  - '0'
+- - clean_dec
+  - '0'
+  - e_Metricas_Sistema_CSV
+  - '0'
+- - noisy_dec
+  - '0'
+  - e_Metricas_Sistema_CSV
+  - '1'
+- - e_Alinea_Ref
+  - '1'
+  - e_Metricas_Sistema_CSV
+  - '2'
+- - e_Alinea_Ref
+  - '0'
+  - e_Metricas_Sistema_CSV
+  - '3'
+- - ebn0_dec
+  - '0'
+  - e_Metricas_Sistema_CSV
+  - '4'
+- - e_SER_Curve
+  - '0'
+  - nulo_ser
+  - '0'
+- - e_BER_Curve
+  - '0'
+  - nulo_ber
+  - '0'
+- - e_SER_Curve
+  - '1'
+  - curva_ser
+  - '0'
+- - teoria_src
+  - '0'
+  - curva_ser
+  - '1'
+- - e_Alinea_Ref
+  - '2'
+  - estado_alinea
+  - '0'
+- - e_Alinea_Ref
+  - '3'
+  - estado_alinea
+  - '1'
+- - e_Alinea_Ref
+  - '4'
+  - estado_alinea
+  - '2'
+- - e_EbN0_Sweep
+  - '1'
+  - ebn0_reducido
+  - '0'
+- - ebn0_reducido
+  - '0'
+  - ebn0_num
+  - '0'
+metadata:
+  file_format: 1
+  grc_version: 3.10.9.2
